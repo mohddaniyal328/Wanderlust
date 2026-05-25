@@ -1,3 +1,7 @@
+/* ===========================
+   BASE STYLES
+   =========================== */
+
 body {
     font-family: "Plus Jakarta Sans", sans-serif !important;
     display: flex;
@@ -8,6 +12,10 @@ body {
 .container{
     flex: 1;
 }
+
+/* ===========================
+   NAVBAR
+   =========================== */
 
 .navbar {
     height: 5rem;
@@ -23,6 +31,322 @@ body {
     color: black !important;
 }
 
+/* ===========================
+   SEARCH BAR (in Navbar)
+   =========================== */
+
+.search-form {
+    max-width: 360px;
+    width: 100%;
+    position: relative;
+}
+
+.search-input {
+    border-radius: 40px !important;
+    padding: 0.5rem 1.2rem !important;
+    padding-right: 3rem !important;
+    border: 2px solid #ddd !important;
+    font-size: 0.9rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search-input:focus {
+    border-color: #fe424d !important;
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.15) !important;
+}
+
+.search-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #fe424d !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #e0303b !important;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* ===========================
+   CATEGORY FILTER BAR
+   =========================== */
+
+.filter-bar-wrapper {
+    border-bottom: 1px solid #ebebeb;
+    padding: 0.8rem 0;
+    margin-bottom: 0.5rem;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+    scroll-snap-type: x mandatory;
+}
+
+/* Hide scrollbar on WebKit browsers for a cleaner look */
+.filter-bar::-webkit-scrollbar {
+    height: 4px;
+}
+.filter-bar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: #717171;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 0.3rem;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, transform 0.15s;
+    scroll-snap-align: start;
+    min-width: fit-content;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.filter-item i {
+    font-size: 1.4rem;
+    transition: transform 0.2s;
+}
+
+.filter-item:hover {
+    color: #222222;
+    border-bottom-color: #dddddd;
+}
+
+.filter-item:hover i {
+    transform: scale(1.1);
+}
+
+.filter-item.active {
+    color: #222222;
+    border-bottom-color: #222222;
+}
+
+.filter-toggle-btn {
+    background-color: transparent;
+    border: 1px solid #ddd !important;
+    border-radius: 12px !important;
+    padding: 0.5rem 1rem !important;
+    flex-direction: row !important;
+    gap: 0.5rem !important;
+}
+
+.filter-toggle-btn:hover {
+    border-color: #222 !important;
+}
+
+/* ===========================
+   PRICE FILTER PANEL
+   =========================== */
+
+.price-filter-panel {
+    background-color: #f7f7f7;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ebebeb;
+}
+
+.price-filter-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.price-inputs {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.price-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.price-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #717171;
+}
+
+.price-field input {
+    width: 140px;
+    border-radius: 10px !important;
+    border: 1px solid #ddd;
+}
+
+.price-separator {
+    font-size: 1.2rem;
+    color: #999;
+    padding-bottom: 0.4rem;
+}
+
+.price-apply-btn {
+    background-color: #222 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.45rem 1.5rem !important;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.price-apply-btn:hover {
+    background-color: #fe424d !important;
+}
+
+.price-clear-btn {
+    border-radius: 10px !important;
+    font-size: 0.9rem;
+}
+
+/* ===========================
+   ACTIVE FILTER BADGES
+   =========================== */
+
+.active-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+}
+
+.active-filters-label {
+    font-size: 0.85rem;
+    color: #717171;
+    font-weight: 500;
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #f0f0f0;
+    color: #222;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.filter-badge i {
+    font-size: 0.7rem;
+    color: #717171;
+}
+
+.filter-badge-remove {
+    text-decoration: none;
+    color: #999;
+    font-size: 1.1rem;
+    line-height: 1;
+    margin-left: 0.2rem;
+    transition: color 0.2s;
+}
+
+.filter-badge-remove:hover {
+    color: #fe424d;
+}
+
+.clear-all-link {
+    font-size: 0.8rem;
+    color: #fe424d;
+    text-decoration: underline;
+    margin-left: 0.5rem;
+}
+
+.clear-all-link:hover {
+    color: #e0303b;
+}
+
+/* ===========================
+   CATEGORY TAG (on listing cards)
+   =========================== */
+
+.category-tag {
+    display: inline-block;
+    background-color: #f7f7f7;
+    color: #717171;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 12px;
+    margin-top: 0.3rem;
+    border: 1px solid #ebebeb;
+}
+
+/* ===========================
+   NO RESULTS STATE
+   =========================== */
+
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 1.5rem;
+}
+
+.no-results h3 {
+    color: #222;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.no-results p {
+    color: #717171;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.no-results .btn {
+    background-color: #222 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.6rem 2rem !important;
+    transition: background-color 0.2s;
+}
+
+.no-results .btn:hover {
+    background-color: #fe424d !important;
+}
+
+/* ===========================
+   FOOTER
+   =========================== */
 
 footer {
     height: 8rem; /* Kept as 8rem per your code */
@@ -72,7 +396,9 @@ footer {
     color: #0c0c0c;
 }
 
-/* card */
+/* ===========================
+   LISTING CARDS
+   =========================== */
 
 /* Removes the link color and underline from the card */
 .listing-link {
@@ -101,22 +427,30 @@ footer {
     color: #222222; /* Keeps text dark instead of link-blue */
 }
 
-/* new page */
+/* ===========================
+   NEW PAGE
+   =========================== */
+
 .add-btn{
     background-color: #fe424d !important;
     border: none !important;
 }
-/* edit page */
+
+/* ===========================
+   EDIT PAGE
+   =========================== */
+
 .edit-btn {
     background-color: #fe424d !important; /* The 'Wanderlust' Red */
     border: none !important;
     padding: 0.5rem 1.5rem !important;
 }
 
+/* ===========================
+   SHOW PAGE
+   =========================== */
 
-/* show route */
-
-      /* Card Styling */
+/* Card Styling */
 .listing-card {
     border: none !important;
     margin-bottom: 2rem;
@@ -157,4 +491,40 @@ footer {
 .airbnb-marker {
     background: none !important;
     border: none !important;
+}
+
+/* ===========================
+   RESPONSIVE ADJUSTMENTS
+   =========================== */
+
+@media (max-width: 768px) {
+    .search-form {
+        max-width: 100%;
+        margin: 0.75rem 0;
+    }
+
+    .price-inputs {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .price-field input {
+        width: 100%;
+    }
+
+    .price-separator {
+        display: none;
+    }
+
+    .filter-bar {
+        gap: 1rem;
+    }
+
+    .filter-item {
+        font-size: 0.7rem;
+    }
+
+    .filter-item i {
+        font-size: 1.2rem;
+    }
 }

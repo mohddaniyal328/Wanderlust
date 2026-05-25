@@ -6,6 +6,7 @@ const sampleListings = [
     price: 1500,
     location: "Malibu",
     country: "United States",
+    category: "Trending",
     geometry: { type: "Point", coordinates: [-118.6793, 34.0259] } // [lng, lat]
   },
   {
@@ -15,6 +16,7 @@ const sampleListings = [
     price: 1200,
     location: "New York City",
     country: "United States",
+    category: "Iconic cities",
     geometry: { type: "Point", coordinates: [-74.0060, 40.7128] }
   },
   {
@@ -24,6 +26,7 @@ const sampleListings = [
     price: 1000,
     location: "Aspen",
     country: "United States",
+    category: "Mountains",
     geometry: { type: "Point", coordinates: [-106.8175, 39.1911] }
   },
   {
@@ -33,6 +36,7 @@ const sampleListings = [
     price: 2500,
     location: "Florence",
     country: "Italy",
+    category: "Castles",
     geometry: { type: "Point", coordinates: [11.2558, 43.7696] }
   },
   {
@@ -42,6 +46,7 @@ const sampleListings = [
     price: 800,
     location: "Portland",
     country: "United States",
+    category: "Camping",
     geometry: { type: "Point", coordinates: [-122.6765, 45.5231] }
   },
   {
@@ -51,6 +56,7 @@ const sampleListings = [
     price: 2000,
     location: "Cancun",
     country: "Mexico",
+    category: "Amazing pools",
     geometry: { type: "Point", coordinates: [-86.8515, 21.1619] }
   },
   {
@@ -60,6 +66,7 @@ const sampleListings = [
     price: 900,
     location: "Lake Tahoe",
     country: "United States",
+    category: "Farms",
     geometry: { type: "Point", coordinates: [-120.0324, 39.0968] }
   },
   {
@@ -69,6 +76,7 @@ const sampleListings = [
     price: 3500,
     location: "Los Angeles",
     country: "United States",
+    category: "Rooms",
     geometry: { type: "Point", coordinates: [-118.2437, 34.0522] }
   },
   {
@@ -78,6 +86,7 @@ const sampleListings = [
     price: 3000,
     location: "Verbier",
     country: "Switzerland",
+    category: "Arctic",
     geometry: { type: "Point", coordinates: [7.2286, 46.0961] }
   },
   {
@@ -87,6 +96,7 @@ const sampleListings = [
     price: 4000,
     location: "Serengeti National Park",
     country: "Tanzania",
+    category: "Domes",
     geometry: { type: "Point", coordinates: [34.8333, -2.3333] }
   },
   {
@@ -96,6 +106,7 @@ const sampleListings = [
     price: 1800,
     location: "Amsterdam",
     country: "Netherlands",
+    category: "Iconic cities",
     geometry: { type: "Point", coordinates: [4.8952, 52.3702] }
   },
   {
@@ -105,6 +116,7 @@ const sampleListings = [
     price: 10000,
     location: "Fiji",
     country: "Fiji",
+    category: "Boats",
     geometry: { type: "Point", coordinates: [178.0650, -17.7134] }
   }
 ];

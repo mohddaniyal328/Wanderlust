@@ -1,29 +1,161 @@
 <% layout("/layouts/boilerplate") -%>
 
-<h3 class="mt-3">All Listings</h3>
+<!-- CATEGORY FILTER BAR -->
+<div class="filter-bar-wrapper">
+    <div class="filter-bar">
+        <a href="/listings" class="filter-item <%= (!category || category === 'All') ? 'active' : '' %>">
+            <i class="fa-solid fa-fire"></i>
+            <span>All</span>
+        </a>
+        <a href="/listings?category=Trending<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Trending' ? 'active' : '' %>">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            <span>Trending</span>
+        </a>
+        <a href="/listings?category=Rooms<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Rooms' ? 'active' : '' %>">
+            <i class="fa-solid fa-bed"></i>
+            <span>Rooms</span>
+        </a>
+        <a href="/listings?category=Iconic cities<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Iconic cities' ? 'active' : '' %>">
+            <i class="fa-solid fa-city"></i>
+            <span>Iconic cities</span>
+        </a>
+        <a href="/listings?category=Mountains<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Mountains' ? 'active' : '' %>">
+            <i class="fa-solid fa-mountain-sun"></i>
+            <span>Mountains</span>
+        </a>
+        <a href="/listings?category=Castles<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Castles' ? 'active' : '' %>">
+            <i class="fa-brands fa-fort-awesome"></i>
+            <span>Castles</span>
+        </a>
+        <a href="/listings?category=Amazing pools<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Amazing pools' ? 'active' : '' %>">
+            <i class="fa-solid fa-water-ladder"></i>
+            <span>Pools</span>
+        </a>
+        <a href="/listings?category=Camping<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Camping' ? 'active' : '' %>">
+            <i class="fa-solid fa-campground"></i>
+            <span>Camping</span>
+        </a>
+        <a href="/listings?category=Farms<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Farms' ? 'active' : '' %>">
+            <i class="fa-solid fa-tractor"></i>
+            <span>Farms</span>
+        </a>
+        <a href="/listings?category=Arctic<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Arctic' ? 'active' : '' %>">
+            <i class="fa-regular fa-snowflake"></i>
+            <span>Arctic</span>
+        </a>
+        <a href="/listings?category=Domes<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Domes' ? 'active' : '' %>">
+            <i class="fa-solid fa-igloo"></i>
+            <span>Domes</span>
+        </a>
+        <a href="/listings?category=Boats<%= q ? '&q='+q : '' %>" class="filter-item <%= category === 'Boats' ? 'active' : '' %>">
+            <i class="fa-solid fa-sailboat"></i>
+            <span>Boats</span>
+        </a>
 
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
-    <% for(let listing of allListings) { %>
-        <div class="col mb-4">
-            <a href="/listings/<%= listing._id %>" class="listing-link">
-                <div class="card listing-card">
-                    <img 
-                        src="<%= (listing.image && listing.image.url) ? listing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" 
-                        class="card-img-top" 
-                        alt="listing image" 
-                        style="height: 20rem;"
-                    >
-                    
-                    <div class="card-img-overlay"></div>
-
-                    <div class="card-body">
-                        <p class="card-text">
-                            <b><%= listing.title %></b> <br>
-                            &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    <% } %>
+        <!-- PRICE FILTER BUTTON -->
+        <button class="filter-item filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#priceFilter">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Filters</span>
+        </button>
+    </div>
 </div>
+
+<!-- PRICE FILTER PANEL (collapsible) -->
+<div class="collapse" id="priceFilter">
+    <div class="price-filter-panel">
+        <form action="/listings" method="GET" class="price-filter-form">
+            <!-- Preserve active category and search query -->
+            <% if(typeof q !== 'undefined' && q) { %>
+                <input type="hidden" name="q" value="<%= q %>">
+            <% } %>
+            <% if(typeof category !== 'undefined' && category) { %>
+                <input type="hidden" name="category" value="<%= category %>">
+            <% } %>
+
+            <div class="price-inputs">
+                <div class="price-field">
+                    <label for="minPrice">Min Price (₹)</label>
+                    <input type="number" id="minPrice" name="minPrice" class="form-control" placeholder="0" min="0" 
+                        value="<%= typeof minPrice !== 'undefined' && minPrice ? minPrice : '' %>">
+                </div>
+                <span class="price-separator">—</span>
+                <div class="price-field">
+                    <label for="maxPrice">Max Price (₹)</label>
+                    <input type="number" id="maxPrice" name="maxPrice" class="form-control" placeholder="Any" min="0"
+                        value="<%= typeof maxPrice !== 'undefined' && maxPrice ? maxPrice : '' %>">
+                </div>
+                <button type="submit" class="btn btn-dark price-apply-btn">Apply</button>
+                <a href="/listings<%= (typeof category !== 'undefined' && category) ? '?category=' + category : '' %>" class="btn btn-outline-secondary price-clear-btn">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ACTIVE FILTERS DISPLAY -->
+<% if ((typeof q !== 'undefined' && q) || (typeof category !== 'undefined' && category && category !== 'All') || (typeof minPrice !== 'undefined' && minPrice) || (typeof maxPrice !== 'undefined' && maxPrice)) { %>
+    <div class="active-filters">
+        <span class="active-filters-label">Active filters:</span>
+        <% if(typeof q !== 'undefined' && q) { %>
+            <span class="filter-badge">
+                <i class="fa-solid fa-magnifying-glass"></i> "<%= q %>"
+                <a href="/listings<%= (typeof category !== 'undefined' && category) ? '?category=' + category : '' %>" class="filter-badge-remove">&times;</a>
+            </span>
+        <% } %>
+        <% if(typeof category !== 'undefined' && category && category !== 'All') { %>
+            <span class="filter-badge">
+                <i class="fa-solid fa-tag"></i> <%= category %>
+                <a href="/listings<%= (typeof q !== 'undefined' && q) ? '?q=' + q : '' %>" class="filter-badge-remove">&times;</a>
+            </span>
+        <% } %>
+        <% if((typeof minPrice !== 'undefined' && minPrice) || (typeof maxPrice !== 'undefined' && maxPrice)) { %>
+            <span class="filter-badge">
+                <i class="fa-solid fa-indian-rupee-sign"></i> 
+                <%= (typeof minPrice !== 'undefined' && minPrice) ? '₹' + Number(minPrice).toLocaleString('en-IN') : '₹0' %>
+                — 
+                <%= (typeof maxPrice !== 'undefined' && maxPrice) ? '₹' + Number(maxPrice).toLocaleString('en-IN') : 'Any' %>
+                <a href="/listings?<%= (typeof q !== 'undefined' && q) ? 'q=' + q + '&' : '' %><%= (typeof category !== 'undefined' && category) ? 'category=' + category : '' %>" class="filter-badge-remove">&times;</a>
+            </span>
+        <% } %>
+        <a href="/listings" class="clear-all-link">Clear all</a>
+    </div>
+<% } %>
+
+<!-- LISTINGS GRID -->
+<% if(allListings.length > 0) { %>
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+        <% for(let listing of allListings) { %>
+            <div class="col mb-4">
+                <a href="/listings/<%= listing._id %>" class="listing-link">
+                    <div class="card listing-card">
+                        <img 
+                            src="<%= (listing.image && listing.image.url) ? listing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" 
+                            class="card-img-top" 
+                            alt="listing image" 
+                            style="height: 20rem;"
+                        >
+                        
+                        <div class="card-img-overlay"></div>
+
+                        <div class="card-body">
+                            <p class="card-text">
+                                <b><%= listing.title %></b> <br>
+                                &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+                            </p>
+                            <% if(listing.category) { %>
+                                <span class="category-tag"><%= listing.category %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        <% } %>
+    </div>
+<% } else { %>
+    <!-- NO RESULTS STATE -->
+    <div class="no-results">
+        <i class="fa-solid fa-map-location-dot no-results-icon"></i>
+        <h3>No listings found</h3>
+        <p>Try adjusting your search or filters to find what you're looking for.</p>
+        <a href="/listings" class="btn btn-dark">Clear all filters</a>
+    </div>
+<% } %>

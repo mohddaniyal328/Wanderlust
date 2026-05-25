@@ -52,6 +52,23 @@
                 <div class="invalid-feedback">Location is required.</div>
             </div> 
 
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select name="listing[category]" class="form-select" required>
+                    <option value="Trending" <%= specificListing.category === 'Trending' ? 'selected' : '' %>>Trending</option>
+                    <option value="Rooms" <%= specificListing.category === 'Rooms' ? 'selected' : '' %>>Rooms</option>
+                    <option value="Iconic cities" <%= specificListing.category === 'Iconic cities' ? 'selected' : '' %>>Iconic cities</option>
+                    <option value="Mountains" <%= specificListing.category === 'Mountains' ? 'selected' : '' %>>Mountains</option>
+                    <option value="Castles" <%= specificListing.category === 'Castles' ? 'selected' : '' %>>Castles</option>
+                    <option value="Amazing pools" <%= specificListing.category === 'Amazing pools' ? 'selected' : '' %>>Amazing pools</option>
+                    <option value="Camping" <%= specificListing.category === 'Camping' ? 'selected' : '' %>>Camping</option>
+                    <option value="Farms" <%= specificListing.category === 'Farms' ? 'selected' : '' %>>Farms</option>
+                    <option value="Arctic" <%= specificListing.category === 'Arctic' ? 'selected' : '' %>>Arctic</option>
+                    <option value="Domes" <%= specificListing.category === 'Domes' ? 'selected' : '' %>>Domes</option>
+                    <option value="Boats" <%= specificListing.category === 'Boats' ? 'selected' : '' %>>Boats</option>
+                </select>
+            </div>
+
             <button class="btn btn-dark edit-btn mt-3">Save Changes</button>
         </form>
         <br><br>

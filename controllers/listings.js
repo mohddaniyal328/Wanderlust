@@ -1,9 +1,34 @@
 const Listing = require("../models/listing");
 
-// INDEX - Show all listings
+// INDEX - Show all listings (with search & filter)
 module.exports.index = async (req, res) => {
-    const allListings = await Listing.find({});
-    res.render("listings/index.ejs", { allListings });
+    let { q, category, minPrice, maxPrice } = req.query;
+    let filter = {};
+
+    // 1. Text search: match title, location, or country
+    if (q) {
+        const regex = new RegExp(q, "i"); // case-insensitive
+        filter.$or = [
+            { title: regex },
+            { location: regex },
+            { country: regex }
+        ];
+    }
+
+    // 2. Category filter
+    if (category && category !== "All") {
+        filter.category = category;
+    }
+
+    // 3. Price range filter
+    if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) filter.price.$gte = Number(minPrice);
+        if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const allListings = await Listing.find(filter);
+    res.render("listings/index.ejs", { allListings, q, category, minPrice, maxPrice });
 };
 
 // NEW - Render form to create listing
