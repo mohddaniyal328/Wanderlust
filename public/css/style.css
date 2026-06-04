@@ -528,3 +528,64 @@ footer {
         font-size: 1.2rem;
     }
 }
+
+/* ===========================
+   STAR RATING STYLES (PHASE 2)
+   =========================== */
+
+/* -- Index Card Ratings -- */
+.card-rating-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Scale down starability stars on listing cards for compact display */
+.listing-card-stars {
+    transform: scale(0.75);
+    transform-origin: left center;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.review-count {
+    font-size: 0.8rem;
+    color: #717171;
+    margin-left: -15px; /* Offset spacing from the scale transform */
+}
+
+.no-reviews-text {
+    font-size: 0.8rem;
+    color: #b0b0b0;
+    font-style: italic;
+}
+
+/* -- Show Page Rating Summary -- */
+.listing-rating-summary {
+    font-size: 0.95rem;
+    color: #222222;
+}
+
+.rating-star-icon {
+    color: #fe424d;
+    font-size: 1rem;
+}
+
+.rating-value {
+    font-size: 0.95rem;
+}
+
+.rating-separator {
+    color: #717171;
+    font-size: 1.1rem;
+}
+
+.reviews-count {
+    color: #222222;
+    cursor: pointer;
+}
+
+.reviews-count:hover {
+    color: #fe424d;
+}

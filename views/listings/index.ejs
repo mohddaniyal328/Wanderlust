@@ -141,6 +141,19 @@
                                 <b><%= listing.title %></b> <br>
                                 &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
                             </p>
+
+                            <!-- STAR RATINGS & REVIEW COUNT -->
+                            <% if (listing.reviews && listing.reviews.length > 0) { %>
+                                <div class="card-rating-container d-flex align-items-center mb-1">
+                                    <p class="starability-result listing-card-stars" data-rating="<%= Math.round(listing.averageRating) %>"></p>
+                                    <span class="review-count">(<%= listing.reviews.length %>)</span>
+                                </div>
+                            <% } else { %>
+                                <div class="card-rating-container d-flex align-items-center mb-1">
+                                    <span class="no-reviews-text">No reviews yet</span>
+                                </div>
+                            <% } %>
+
                             <% if(listing.category) { %>
                                 <span class="category-tag"><%= listing.category %></span>
                             <% } %>

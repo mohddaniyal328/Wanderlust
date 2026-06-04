@@ -9,6 +9,14 @@
 <div class="row mt-3">
     <div class="col-8 offset-3">
         <h3><%= specificListing.title %></h3>
+        <% if (specificListing.reviews && specificListing.reviews.length > 0) { %>
+            <div class="listing-rating-summary mb-3 d-flex align-items-center">
+                <span class="rating-star-icon"><i class="fa-solid fa-star"></i></span>
+                <span class="rating-value ms-1 fw-bold"><%= averageRating %></span>
+                <span class="rating-separator mx-2">&middot;</span>
+                <span class="reviews-count text-decoration-underline fw-semibold"><%= specificListing.reviews.length %> <%= specificListing.reviews.length === 1 ? 'review' : 'reviews' %></span>
+            </div>
+        <% } %>
     </div>
 
     <div class="card col-6 offset-3 show-card listing-card">
