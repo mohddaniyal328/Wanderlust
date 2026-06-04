@@ -1,5 +1,8 @@
+const listingDataElement = document.getElementById('listing-data');
+const listing = listingDataElement ? JSON.parse(listingDataElement.textContent) : null;
+
 // Ensure 'listing' exists before running to prevent crashes
-if (typeof listing !== 'undefined' && listing !== null) {
+if (listing !== null) {
     let lat = 26.9124; 
     let lng = 75.7873;
 

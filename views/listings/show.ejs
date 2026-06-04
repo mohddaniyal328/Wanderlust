@@ -1,11 +1,6 @@
 <% layout("/layouts/boilerplate") -%>
 
-<script>
-    // This variable 'listing' will now be accessible in map.js
-    const listing = <%- JSON.stringify(specificListing) %>;
-</script>
 
-<script src="/js/map.js"></script>
 <div class="row mt-3">
     <div class="col-8 offset-3">
         <h3><%= specificListing.title %></h3>
@@ -112,9 +107,8 @@
     </div>
 </div>
 
-<script>
-    // This passes the data from EJS to the JS file
-    const listing = <%- JSON.stringify(specificListing) %>;
+<script id="listing-data" type="application/json">
+    <%- JSON.stringify(specificListing) %>
 </script>
 
 <script src="/js/map.js"></script>
