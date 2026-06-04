@@ -143,10 +143,10 @@
                             </p>
 
                             <!-- STAR RATINGS & REVIEW COUNT -->
-                            <% if (listing.reviews && listing.reviews.length > 0) { %>
+                            <% if (listing.reviewCount > 0) { %>
                                 <div class="card-rating-container d-flex align-items-center mb-1">
                                     <p class="starability-result listing-card-stars" data-rating="<%= Math.round(listing.averageRating) %>"></p>
-                                    <span class="review-count">(<%= listing.reviews.length %>)</span>
+                                    <span class="review-count">(<%= listing.reviewCount %>)</span>
                                 </div>
                             <% } else { %>
                                 <div class="card-rating-container d-flex align-items-center mb-1">

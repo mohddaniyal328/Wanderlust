@@ -14,24 +14,26 @@
         <% } %>
     </div>
 
-    <div class="card col-6 offset-3 show-card listing-card">
-        <img 
-            src="<%= (specificListing.image && specificListing.image.url) ? specificListing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" 
-            class="card-img-top show-img" 
-            alt="listing_image"
-        >
-        
-        <div class="card-body">
-            <p class="card-text">
-                Owned by: <i><%= specificListing.owner ? specificListing.owner.username : "Unknown Admin" %></i>
-            </p>
-            
-            <p class="card-text"><b><%= specificListing.description %></b></p>
-            
-            <p class="card-text">&#8377; <%= specificListing.price.toLocaleString("en-IN") %></p>
-            
-            <p class="card-text"><%= specificListing.location %></p>
-            <p class="card-text"><%= specificListing.country %></p>
+    <div class="col-8 offset-3 show-listing-container">
+        <!-- HERO IMAGE -->
+        <div class="show-hero-image">
+            <img src="<%= (specificListing.image && specificListing.image.url) ? specificListing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" class="show-img" alt="listing_image">
+        </div>
+
+        <!-- LISTING DETAILS GRID -->
+        <div class="show-details-section mt-3">
+            <div class="show-host-info">
+                <i class="fa-solid fa-user-circle"></i>
+                Hosted by <strong><%= specificListing.owner ? specificListing.owner.username : "Unknown Admin" %></strong>
+            </div>
+            <p class="show-description"><%= specificListing.description %></p>
+            <div class="show-meta-row">
+                <span class="show-price">&#8377; <%= specificListing.price.toLocaleString("en-IN") %> <small>/ night</small></span>
+                <span class="show-location-badge">
+                    <i class="fa-solid fa-location-dot"></i> 
+                    <%= specificListing.location %>, <%= specificListing.country %>
+                </span>
+            </div>
         </div>
     </div>
 
@@ -80,14 +82,38 @@
         <% } %>
 
         <% if(specificListing.reviews.length > 0) { %>
-            <p><b>All Reviews</b></p>
+            <h4 class="reviews-section-title">
+                <i class="fa-solid fa-star" style="color: #fe424d;"></i>
+                <%= averageRating %> &middot; <%= specificListing.reviews.length %> <%= specificListing.reviews.length === 1 ? 'review' : 'reviews' %>
+            </h4>
+
+            <!-- RATING BREAKDOWN -->
+            <div class="rating-breakdown mb-3">
+                <% for (let i = 5; i >= 1; i--) { %>
+                    <% let count = specificListing.reviews.filter(r => r.rating === i).length; %>
+                    <% let pct = Math.round((count / specificListing.reviews.length) * 100); %>
+                    <div class="breakdown-row">
+                        <span class="breakdown-label"><%= i %></span>
+                        <div class="breakdown-bar-track">
+                            <div class="breakdown-bar-fill" style="width: <%= pct %>%;"></div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
             <div class="row">
                 <% for(let review of specificListing.reviews) { %>
-                    <div class="card col-5 ms-3 mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">@<%= review.author ? review.author.username : "Anonymous" %></h5>
-                            <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
-                            <p class="card-text"><%= review.comment %></p>
+                    <div class="review-card col-5 ms-3 mb-3">
+                        <div class="review-card-body">
+                            <div class="review-header d-flex align-items-center">
+                                <div class="review-avatar"><%= (review.author ? review.author.username : "A").charAt(0).toUpperCase() %></div>
+                                <div class="review-author-info ms-2">
+                                    <strong>@<%= review.author ? review.author.username : "Anonymous" %></strong>
+                                    <div class="review-date text-muted"><%= review.createdAt ? review.createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '' %></div>
+                                </div>
+                            </div>
+                            <p class="starability-result review-stars mt-2" data-rating="<%= review.rating %>"></p>
+                            <p class="review-comment"><%= review.comment %></p>
                             <% if(currUser && review.author && review.author._id.equals(currUser._id)) { %>
                                 <form class="mb-3" method="POST" action="/listings/<%= specificListing._id %>/reviews/<%= review._id %>?_method=DELETE">
                                     <button class="btn btn-sm btn-dark">Delete</button>
@@ -107,8 +133,6 @@
     </div>
 </div>
 
-<script id="listing-data" type="application/json">
-    <%- JSON.stringify(specificListing) %>
-</script>
+<div id="listing-data" data-listing="<%= encodeURIComponent(JSON.stringify(specificListing)) %>" style="display: none;"></div>
 
 <script src="/js/map.js"></script>

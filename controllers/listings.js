@@ -27,17 +27,7 @@ module.exports.index = async (req, res) => {
         if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    const allListings = await Listing.find(filter).populate("reviews");
-
-    // Compute average rating for each listing
-    for (let listing of allListings) {
-        if (listing.reviews && listing.reviews.length > 0) {
-            let sum = listing.reviews.reduce((acc, curr) => acc + curr.rating, 0);
-            listing.averageRating = (sum / listing.reviews.length).toFixed(1);
-        } else {
-            listing.averageRating = 0;
-        }
-    }
+    const allListings = await Listing.find(filter);
 
     res.render("listings/index.ejs", { allListings, q, category, minPrice, maxPrice });
 };

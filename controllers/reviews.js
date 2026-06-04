@@ -1,6 +1,20 @@
 const Listing = require("../models/listing");
 const Review = require("../models/review");
 
+// Helper: Recalculate and cache rating on Listing
+async function updateListingRatingCache(listingId) {
+    const listing = await Listing.findById(listingId).populate("reviews");
+    if (listing.reviews.length > 0) {
+        const sum = listing.reviews.reduce((acc, r) => acc + r.rating, 0);
+        listing.averageRating = parseFloat((sum / listing.reviews.length).toFixed(1));
+        listing.reviewCount = listing.reviews.length;
+    } else {
+        listing.averageRating = 0;
+        listing.reviewCount = 0;
+    }
+    await listing.save();
+}
+
 // CREATE REVIEW
 module.exports.createReview = async (req, res) => {
     let listing = await Listing.findById(req.params.id);
@@ -13,6 +27,7 @@ module.exports.createReview = async (req, res) => {
 
     await newReview.save();
     await listing.save();
+    await updateListingRatingCache(listing._id);
 
     req.flash("success", "New Review Created!");
     res.redirect(`/listings/${listing._id}`);
@@ -26,6 +41,7 @@ module.exports.destroyReview = async (req, res) => {
     await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
     // Delete the actual review document
     await Review.findByIdAndDelete(reviewId);
+    await updateListingRatingCache(id);
 
     req.flash("success", "Review Deleted!");
     res.redirect(`/listings/${id}`);

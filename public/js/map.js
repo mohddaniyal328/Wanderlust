@@ -1,5 +1,5 @@
 const listingDataElement = document.getElementById('listing-data');
-const listing = listingDataElement ? JSON.parse(listingDataElement.textContent) : null;
+const listing = listingDataElement ? JSON.parse(decodeURIComponent(listingDataElement.getAttribute('data-listing'))) : null;
 
 // Ensure 'listing' exists before running to prevent crashes
 if (listing !== null) {

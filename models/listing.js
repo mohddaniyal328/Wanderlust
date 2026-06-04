@@ -32,6 +32,14 @@ const listingSchema = new schema({
         enum: ["Trending", "Rooms", "Iconic cities", "Mountains", "Castles", "Amazing pools", "Camping", "Farms", "Arctic", "Domes", "Boats"],
         default: "Rooms"
     },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    reviewCount: {
+        type: Number,
+        default: 0
+    },
     reviews: [
         {
             type: schema.Types.ObjectId,
