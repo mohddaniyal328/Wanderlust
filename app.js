@@ -97,7 +97,9 @@ app.use((req, res, next) => {
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
-
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 // 9. ERROR HANDLING (The "path-to-regexp" fix)
 // 9. ERROR HANDLING (The modern "Catch-All" fix)
 // Instead of "*", we use "/:path*" which gives the wildcard a name
@@ -118,6 +120,3 @@ app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
 });
 
-app.get("/", (req, res) => {
-    res.redirect("/listings"); // Or wherever your main page is
-});
