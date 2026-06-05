@@ -109,11 +109,15 @@ app.all("/{0,}", (req, res, next) => {
 app.use((err, req, res, next) => {
     let { statusCode = 500, message = "Something went wrong!" } = err;
     // Sending the whole 'err' object so error.ejs can see err.message
-    res.status(statusCode).render("error.ejs", { err }); 
+    res.status(statusCode).render("error.ejs", { err });
 });
 
 // 10. SERVER START
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
+});
+
+app.get("/", (req, res) => {
+    res.redirect("/listings"); // Or wherever your main page is
 });
