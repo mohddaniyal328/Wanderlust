@@ -10,24 +10,29 @@ async function main() {
   await mongoose.connect(MONGO_URL);
   console.log("Connected to DB");
 
-  // Create a default user
-  let user = await User.findOne({ username: "admin" });
-  if (!user) {
-    user = new User({ email: "admin@wanderlust.com", username: "admin" });
-    user = await User.register(user, "admin123");
-    console.log("User created: admin / admin123");
-  } else {
-    console.log("User already exists: admin");
+  // Delete admin user
+  await User.deleteMany({ username: "admin" });
+  console.log("Deleted admin user");
+
+  // Create 3 new users
+  const users = [];
+  for (const name of ["demo", "demo2", "demo3"]) {
+    let user = new User({ email: `${name}@wanderlust.com`, username: name });
+    user = await User.register(user, "741");
+    users.push(user);
+    console.log(`Created user: ${name}`);
   }
 
-  // Seed listings
+  // Delete old listings
   await Listing.deleteMany({});
-  const updatedData = initData.data.map((obj) => ({
+
+  // Distribute 12 listings evenly (4 each)
+  const updatedData = initData.data.map((obj, i) => ({
     ...obj,
-    owner: user._id,
+    owner: users[i % 3]._id,
   }));
   await Listing.insertMany(updatedData);
-  console.log(`${updatedData.length} listings seeded!`);
+  console.log(`${updatedData.length} listings seeded across 3 users`);
 
   await mongoose.disconnect();
   console.log("Done!");
