@@ -355,58 +355,6 @@ body {
 }
 
 /* ===========================
-   FOOTER
-   =========================== */
-
-footer {
-    height: 8rem; /* Kept as 8rem per your code */
-    background-color: #ebebeb;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.f-info-socials, 
-.f-info-links, 
-.f-info-brand {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0.5rem 0; 
-}
-
-/* 1. Icons: Bigger, Black, and Red on Hover */
-.f-info-socials a {
-    color: black;      /* Initial color */
-    font-size: 1.5rem; /* Increased size */
-    margin: 0 0.5rem;  /* Spacing between icons */
-    transition: 0.2s;  /* Smooth color change */
-}
-
-.f-info-socials a:hover {
-    color: #fe424d;    /* Wanderlust Red on hover */
-}
-
-/* 2. Privacy & Terms: Black, Underline on Hover, Darker Text */
-.f-info-links a {
-    color: black;
-    text-decoration: none; /* No underline initially */
-    margin: 0 0.75rem;
-}
-
-.f-info-links a:hover {
-    text-decoration: underline;
-    color: #000; /* Becomes pure black (darker) */
-}
-
-.f-info-brand {
-    font-size: 2 rem;
-    color: #0c0c0c;
-}
-
-/* ===========================
    LISTING CARDS
    =========================== */
 
@@ -760,4 +708,290 @@ footer {
     font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 1rem;
+}
+
+/* ===========================
+   AUTH PAGES (Login/Signup)
+   =========================== */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid #f0f0f0;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #fe424d, #f77062);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.auth-icon i {
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.auth-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.3rem;
+}
+
+.auth-header p {
+    color: #717171;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.input-group .form-control {
+    padding-left: 2.8rem;
+    border-radius: 12px !important;
+    border: 1.5px solid #e0e0e0;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-group .form-control:focus {
+    border-color: #fe424d !important;
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.1) !important;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 0.9rem;
+    z-index: 5;
+}
+
+.btn-auth {
+    background: linear-gradient(135deg, #fe424d, #e0303b) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.75rem !important;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(254, 66, 77, 0.35);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #717171;
+}
+
+.auth-footer a {
+    color: #fe424d;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ===========================
+   ERROR PAGE
+   =========================== */
+
+.error-page {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #fe424d;
+    opacity: 0.8;
+}
+
+.error-title {
+    font-size: 6rem;
+    font-weight: 800;
+    color: #222;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.error-subtitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #484848;
+}
+
+.error-desc {
+    color: #717171;
+    font-size: 1rem;
+    max-width: 400px;
+}
+
+/* ===========================
+   FLASH MESSAGES
+   =========================== */
+
+.flash-alert {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.flash-content {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.flash-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.alert-success .flash-icon {
+    color: #198754;
+}
+
+.alert-danger .flash-icon {
+    color: #dc3545;
+}
+
+/* ===========================
+   FOOTER UPGRADE
+   =========================== */
+
+.site-footer {
+    background: #222;
+    color: #fff;
+    padding: 3rem 1rem 1.5rem;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-logo {
+    color: #fe424d;
+    font-size: 1.5rem;
+}
+
+.footer-brand-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.footer-tagline {
+    color: #999;
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+}
+
+.footer-socials {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.footer-socials a {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.footer-socials a:hover {
+    background: #fe424d;
+    border-color: #fe424d;
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links a {
+    color: #999;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #fff;
+}
+
+.footer-divider {
+    color: #555;
+    font-size: 0.75rem;
+}
+
+.footer-copyright {
+    color: #666;
+    font-size: 0.8rem;
+    margin: 0;
 }

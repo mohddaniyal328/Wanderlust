@@ -1,7 +1,10 @@
 <% if(success && success.length) { %>
     <div class="row">
-        <div class="alert alert-success alert-dismissible fade show col-md-6 offset-md-3 mt-3" role="alert">
-            <%= success %>
+        <div class="alert alert-success alert-dismissible fade show col-md-6 offset-md-3 mt-3 flash-alert" role="alert">
+            <div class="flash-content">
+                <i class="fa-solid fa-circle-check flash-icon"></i>
+                <span><%= success %></span>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
@@ -9,8 +12,11 @@
 
 <% if(error && error.length) { %>
     <div class="row">
-        <div class="alert alert-danger alert-dismissible fade show col-md-6 offset-md-3 mt-3" role="alert">
-            <%= error %>
+        <div class="alert alert-danger alert-dismissible fade show col-md-6 offset-md-3 mt-3 flash-alert" role="alert">
+            <div class="flash-content">
+                <i class="fa-solid fa-circle-exclamation flash-icon"></i>
+                <span><%= error %></span>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
