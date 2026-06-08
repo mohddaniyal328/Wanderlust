@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 const Review = require("./review.js");
 
-const listingSchema = new schema({
+const listingSchema = new Schema({
     title: {
         type: String,
         required: true,
@@ -14,7 +14,7 @@ const listingSchema = new schema({
             // The default link if the field is undefined
             default: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&q=80&w=1080",
             // THE FIX: The setter handles empty strings ("") or null values
-            set: (v) => v === "" ? "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&q=80&w=1080" : v,
+            set: (v) => (!v || v === "") ? "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&q=80&w=1080" : v,
         },
         filename: {
             type: String,
@@ -42,7 +42,7 @@ const listingSchema = new schema({
     },
     reviews: [
         {
-            type: schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: "Review"
         }
     ],
@@ -71,9 +71,8 @@ listingSchema.post("findOneAndDelete", async (listing) => {
                 $in: listing.reviews,
             },
         });
-        console.log("Cleanup: Associated reviews deleted!");
     }
 });
 
-const Listing = mongoose.model("listing", listingSchema);
+const Listing = mongoose.model("Listing", listingSchema);
 module.exports = Listing;

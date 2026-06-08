@@ -12,8 +12,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'wanderlust_DEV', // The name of the folder in Cloudinary
-        allowedFormats: ["png", "jpg", "jpeg"], // Restrict file types
+        folder: process.env.NODE_ENV === 'production' ? 'wanderlust_prod' : 'wanderlust_DEV',
+        allowedFormats: ["png", "jpg", "jpeg"],
     },
 });
 

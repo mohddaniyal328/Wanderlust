@@ -7,7 +7,8 @@ module.exports.index = async (req, res) => {
 
     // 1. Text search: match title, location, or country
     if (q) {
-        const regex = new RegExp(q, "i"); // case-insensitive
+        const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escaped, "i"); // case-insensitive
         filter.$or = [
             { title: regex },
             { location: regex },
@@ -23,8 +24,10 @@ module.exports.index = async (req, res) => {
     // 3. Price range filter
     if (minPrice || maxPrice) {
         filter.price = {};
-        if (minPrice) filter.price.$gte = Number(minPrice);
-        if (maxPrice) filter.price.$lte = Number(maxPrice);
+        const min = Number(minPrice);
+        const max = Number(maxPrice);
+        if (minPrice && !isNaN(min)) filter.price.$gte = min;
+        if (maxPrice && !isNaN(max)) filter.price.$lte = max;
     }
 
     const allListings = await Listing.find(filter);
@@ -63,48 +66,40 @@ module.exports.createListing = async (req, res, next) => {
     // 1. Grab the address the user typed in the 'Location' field
     let address = req.body.listing.location;
 
-    try {
-        // 2. THIS IS THE GEOCODING MAN! 
-        // We send the address to OpenStreetMap and ask for JSON back.
-        let response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-            {
-                headers: { 'User-Agent': 'Wanderlust_Student_Project' }
-            }
-        );
-
-        let data = await response.json();
-
-        const newListing = new Listing(req.body.listing);
-        newListing.owner = req.user._id;
-
-        // 3. Check if the Geocoder actually found the place
-        if (data && data.length > 0) {
-            console.log("Location Found:", data[0].display_name);
-            newListing.geometry = {
-                type: "Point",
-                coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)] // Real dynamic data!
-            };
-        } else {
-            console.log("Location not found, using fallback.");
-            newListing.geometry = {
-                type: "Point",
-                coordinates: [75.7873, 26.9124] // Jaipur fallback
-            };
+    // 2. THIS IS THE GEOCODING MAN! 
+    // We send the address to OpenStreetMap and ask for JSON back.
+    let response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+        {
+            headers: { 'User-Agent': 'Wanderlust_Student_Project' }
         }
+    );
 
-        if (req.file) {
-            newListing.image = { url: req.file.path, filename: req.file.filename };
-        }
+    let data = await response.json();
 
-        await newListing.save();
-        req.flash("success", "New Listing Created!");
-        res.redirect("/listings");
+    const newListing = new Listing(req.body.listing);
+    newListing.owner = req.user._id;
 
-    } catch (err) {
-        console.error("Geocoding failed:", err);
-        next(err); // This catches the 'Access Denied' or network issues
+    // 3. Check if the Geocoder actually found the place
+    if (data && data.length > 0) {
+        newListing.geometry = {
+            type: "Point",
+            coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+        };
+    } else {
+        newListing.geometry = {
+            type: "Point",
+            coordinates: [75.7873, 26.9124] // Jaipur fallback
+        };
     }
+
+    if (req.file) {
+        newListing.image = { url: req.file.path, filename: req.file.filename };
+    }
+
+    await newListing.save();
+    req.flash("success", "New Listing Created!");
+    res.redirect("/listings");
 };
 
 // EDIT - Render Edit Form
@@ -123,7 +118,11 @@ module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
     
     // 1. Update the text fields first
-    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true, runValidators: true });
+    if (!listing) {
+        req.flash("error", "Listing not found!");
+        return res.redirect("/listings");
+    }
 
     // 2. ONLY update the image if the user actually uploaded a new file
     if (typeof req.file !== "undefined") {
@@ -141,7 +140,10 @@ module.exports.updateListing = async (req, res) => {
 module.exports.destroyListing = async (req, res) => {
     let { id } = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
+    if (!deletedListing) {
+        req.flash("error", "Listing not found!");
+        return res.redirect("/listings");
+    }
     req.flash("success", "Listing Deleted!");
     res.redirect("/listings");
 };

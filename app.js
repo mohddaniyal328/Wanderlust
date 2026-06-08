@@ -15,6 +15,11 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
+// Validate required env vars in production
+if (process.env.NODE_ENV === "production") {
+    if (!process.env.SECRET) throw new Error("SECRET environment variable is required in production");
+    if (!process.env.DB_URL) throw new Error("DB_URL environment variable is required in production");
+}
 
 // Models & Utilities
 const User = require("./models/user.js");
@@ -29,9 +34,6 @@ const userRouter = require("./routes/user.js");
 const dbUrl = process.env.DB_URL || "mongodb://127.0.0.1:27017/wanderlust";
 
 main()
-    .then(() => {
-        console.log("Connected to DB");
-    })
     .catch((err) => {
         console.log(err);
     });
@@ -66,11 +68,12 @@ const sessionOptions = {
     store,
     secret: process.env.SECRET || "mysupersecretcode",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
     },
 };
 
@@ -100,11 +103,9 @@ app.use("/", userRouter);
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
-// 9. ERROR HANDLING (The "path-to-regexp" fix)
-// 9. ERROR HANDLING (The modern "Catch-All" fix)
-// Instead of "*", we use "/:path*" which gives the wildcard a name
-// 9. ERROR HANDLING (The "No-Asterisk" Fix for Node v24)
-app.all("/{0,}", (req, res, next) => {
+// 9. ERROR HANDLING
+// 404 catch-all middleware
+app.use((req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));
 });
 

@@ -18,6 +18,10 @@ async function updateListingRatingCache(listingId) {
 // CREATE REVIEW
 module.exports.createReview = async (req, res) => {
     let listing = await Listing.findById(req.params.id);
+    if (!listing) {
+        req.flash("error", "Listing not found!");
+        return res.redirect("/listings");
+    }
     let newReview = new Review(req.body.review);
     
     // Assign the logged-in user as the author
@@ -38,7 +42,11 @@ module.exports.destroyReview = async (req, res) => {
     let { id, reviewId } = req.params;
 
     // Remove the review reference from the Listing's reviews array
-    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    const listing = await Listing.findById(id);
+    if (listing) {
+        listing.reviews.pull(reviewId);
+        await listing.save();
+    }
     // Delete the actual review document
     await Review.findByIdAndDelete(reviewId);
     await updateListingRatingCache(id);
