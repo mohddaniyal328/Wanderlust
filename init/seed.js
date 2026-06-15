@@ -10,9 +10,9 @@ async function main() {
   await mongoose.connect(MONGO_URL);
   console.log("Connected to DB");
 
-  // Delete admin user
-  await User.deleteMany({ username: "admin" });
-  console.log("Deleted admin user");
+  // Delete all existing users
+  await User.deleteMany({});
+  console.log("Deleted all existing users");
 
   // Create 5 new users
   const users = [];
