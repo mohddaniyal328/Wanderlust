@@ -22,6 +22,7 @@ const sanitize = require("mongo-sanitize");
 if (!process.env.SECRET) throw new Error("SECRET environment variable is required");
 if (process.env.NODE_ENV === "production") {
     if (!process.env.DB_URL) throw new Error("DB_URL environment variable is required in production");
+    if (!process.env.MAPBOX_TOKEN) throw new Error("MAPBOX_TOKEN environment variable is required in production");
 }
 
 // Models & Utilities

@@ -1,8 +1,14 @@
-const Listing = require("../models/listing");
-
 const FALLBACK_COORDS = [75.7873, 26.9124]; // Jaipur
 
-// In-memory cache to avoid repeated API calls for the same address
+let geocoder = null;
+function getGeocoder() {
+    if (!geocoder && process.env.MAPBOX_TOKEN) {
+        const mapboxClient = require("@mapbox/mapbox-sdk/services/geocoding");
+        geocoder = mapboxClient({ accessToken: process.env.MAPBOX_TOKEN });
+    }
+    return geocoder;
+}
+
 const geocodeCache = new Map();
 
 async function geocode(address) {
@@ -12,39 +18,33 @@ async function geocode(address) {
 
     const normalized = address.trim().toLowerCase();
 
-    // 1. Check in-memory cache first
     if (geocodeCache.has(normalized)) {
         return geocodeCache.get(normalized);
     }
 
-    // 2. Check if any existing listing has this exact location
-    const existing = await Listing.findOne({ location: new RegExp(`^${address.trim()}$`, "i") });
-    if (existing && existing.geometry && existing.geometry.coordinates) {
-        const result = { found: true, coordinates: existing.geometry.coordinates };
+    const client = getGeocoder();
+    if (!client) {
+        console.log("MAPBOX_TOKEN not set, using fallback coordinates");
+        const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
         geocodeCache.set(normalized, result);
         return result;
     }
 
-    // 3. Hit the Nominatim API
     try {
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.trim())}&limit=1`,
-            {
-                headers: { "User-Agent": "Wanderlust_Student_Project" },
-            }
-        );
+        const response = await client
+            .forwardGeocode({
+                query: address.trim(),
+                limit: 1,
+            })
+            .send();
 
-        if (response.status === 429) {
-            console.log("Nominatim rate-limited, using fallback coordinates");
-            const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
-            geocodeCache.set(normalized, result);
-            return result;
-        }
+        const features = response.body.features;
 
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-            const result = { found: true, coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)] };
+        if (features && features.length > 0) {
+            const result = {
+                found: true,
+                coordinates: features[0].center // [longitude, latitude]
+            };
             geocodeCache.set(normalized, result);
             return result;
         }
@@ -52,7 +52,7 @@ async function geocode(address) {
         return { found: false };
 
     } catch (err) {
-        console.log("Geocoding API failed, using fallback:", err.message);
+        console.log("Mapbox geocoding failed, using fallback:", err.message);
         const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
         geocodeCache.set(normalized, result);
         return result;
