@@ -139,8 +139,12 @@
                         <div class="card-body">
                             <p class="card-text">
                                 <b><%= listing.title %></b> <br>
-                                &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+                                <span class="gst-base-price" data-price="<%= listing.price %>">&#8377; <%= listing.price.toLocaleString("en-IN") %></span> / night
                             </p>
+                            <button type="button" class="gst-toggle-btn" title="Toggle 18% GST">
+                                <i class="fa-solid fa-percent"></i> GST
+                            </button>
+                            <div class="gst-price-info"></div>
 
                             <!-- STAR RATINGS & REVIEW COUNT -->
                             <% if (listing.reviewCount > 0) { %>

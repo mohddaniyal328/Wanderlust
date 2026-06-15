@@ -34,6 +34,31 @@
                     <%= specificListing.location %>, <%= specificListing.country %>
                 </span>
             </div>
+
+            <!-- GST SECTION -->
+            <div class="show-gst-section">
+                <button type="button" class="show-gst-toggle">
+                    <i class="fa-solid fa-percent"></i> Include 18% GST
+                </button>
+                <% 
+                    const gstAmount = Math.round(specificListing.price * 0.18);
+                    const totalWithGst = specificListing.price + gstAmount;
+                %>
+                <div class="show-gst-breakdown">
+                    <div class="gst-line">
+                        <span>Base Price</span>
+                        <span>&#8377; <%= specificListing.price.toLocaleString("en-IN") %></span>
+                    </div>
+                    <div class="gst-line">
+                        <span>GST (18%)</span>
+                        <span>&#8377; <%= gstAmount.toLocaleString("en-IN") %></span>
+                    </div>
+                    <div class="gst-line total">
+                        <span>Total with GST</span>
+                        <span>&#8377; <%= totalWithGst.toLocaleString("en-IN") %></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

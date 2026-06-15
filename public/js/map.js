@@ -33,6 +33,7 @@ if (listing !== null) {
                 <h6 style="margin: 0; font-weight: bold;">${listing.title}</h6>
                 <p style="margin: 2px 0; font-size: 12px; color: #555;">${listing.location}</p>
                 <p style="margin: 0; font-weight: bold; color: #fe424d;">₹${listing.price.toLocaleString("en-IN")} / night</p>
+                <p style="margin: 4px 0 0; font-size: 11px; color: #888;">+ 18% GST = ₹${Math.round(listing.price * 1.18).toLocaleString("en-IN")}</p>
             </div>
         `)
         .openPopup();

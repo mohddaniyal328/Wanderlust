@@ -994,3 +994,121 @@ body {
     font-size: 0.8rem;
     margin: 0;
 }
+
+/* ===========================
+   GST TOGGLE BUTTON
+   =========================== */
+
+.gst-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1.5px solid #fe424d;
+    background: transparent;
+    color: #fe424d;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-top: 5px;
+    letter-spacing: 0.3px;
+}
+
+.gst-toggle-btn:hover {
+    background: #fe424d;
+    color: #fff;
+}
+
+.gst-toggle-btn.active {
+    background: #fe424d;
+    color: #fff;
+}
+
+.gst-toggle-btn i {
+    font-size: 0.65rem;
+}
+
+.gst-price-info {
+    display: none;
+    font-size: 0.75rem;
+    color: #555;
+    margin-top: 3px;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.gst-price-info.show {
+    display: block;
+}
+
+.gst-price-info .gst-amount {
+    color: #fe424d;
+    font-weight: 600;
+}
+
+.gst-price-info .gst-total {
+    font-weight: 700;
+    color: #222;
+}
+
+.show-gst-section {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.show-gst-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 25px;
+    border: 2px solid #fe424d;
+    background: transparent;
+    color: #fe424d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.show-gst-toggle:hover,
+.show-gst-toggle.active {
+    background: #fe424d;
+    color: #fff;
+}
+
+.show-gst-breakdown {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.show-gst-breakdown.show {
+    display: block;
+}
+
+.show-gst-breakdown .gst-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9rem;
+}
+
+.show-gst-breakdown .gst-line.total {
+    border-top: 2px solid #fe424d;
+    margin-top: 6px;
+    padding-top: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fe424d;
+}
