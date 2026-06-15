@@ -14,9 +14,9 @@ async function main() {
   await User.deleteMany({ username: "admin" });
   console.log("Deleted admin user");
 
-  // Create 3 new users
+  // Create 5 new users
   const users = [];
-  for (const name of ["demo", "demo2", "demo3"]) {
+  for (const name of ["demo", "demo2", "demo3", "alice", "bob"]) {
     let user = new User({ email: `${name}@wanderlust.com`, username: name });
     user = await User.register(user, "741");
     users.push(user);
@@ -26,13 +26,13 @@ async function main() {
   // Delete old listings
   await Listing.deleteMany({});
 
-  // Distribute 12 listings evenly (4 each)
+  // Distribute listings evenly across all users
   const updatedData = initData.data.map((obj, i) => ({
     ...obj,
-    owner: users[i % 3]._id,
+    owner: users[i % users.length]._id,
   }));
   await Listing.insertMany(updatedData);
-  console.log(`${updatedData.length} listings seeded across 3 users`);
+  console.log(`${updatedData.length} listings seeded across ${users.length} users`);
 
   await mongoose.disconnect();
   console.log("Done!");

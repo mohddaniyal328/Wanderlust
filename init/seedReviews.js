@@ -25,6 +25,18 @@ const sampleReviews = [
     { rating: 3, comment: "Nice place but could use some updates. The bathroom was a bit dated." },
     { rating: 5, comment: "We didn't want to leave! The property was even better than the photos." },
     { rating: 5, comment: "Exceptional host and amazing property. A five-star experience all around." },
+    { rating: 4, comment: "Really enjoyed our stay. The host was responsive and the place was spotless." },
+    { rating: 5, comment: "Will definitely book again. The location and ambiance were just perfect." },
+    { rating: 3, comment: "It was okay. Nothing special but got the job done for a short stay." },
+    { rating: 4, comment: "Nice decor and comfortable beds. The neighbourhood was lively and fun." },
+    { rating: 5, comment: "Truly a hidden gem! We were pleasantly surprised by every detail." },
+    { rating: 2, comment: "Too noisy at night. The location is central but the walls are thin." },
+    { rating: 5, comment: "A dream stay. The host upgraded us for free and the views were insane." },
+    { rating: 4, comment: "Clean, modern, and well-located. Minor noise from construction nearby." },
+    { rating: 5, comment: "Best vacation rental we've ever used. Everything was absolutely top-notch." },
+    { rating: 3, comment: "Fine for a budget stay. Don't expect luxury but it's decent for the price." },
+    { rating: 5, comment: "The photos don't do it justice. Even more beautiful in person!" },
+    { rating: 4, comment: "Loved the breakfast options nearby. The host gave great restaurant tips." },
 ];
 
 async function main() {
