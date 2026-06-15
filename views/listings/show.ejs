@@ -2,7 +2,7 @@
 
 
 <div class="row mt-3">
-    <div class="col-8 offset-3">
+    <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2">
         <h3><%= specificListing.title %></h3>
         <% if (specificListing.reviews && specificListing.reviews.length > 0) { %>
             <div class="listing-rating-summary mb-3 d-flex align-items-center">
@@ -14,7 +14,7 @@
         <% } %>
     </div>
 
-    <div class="col-8 offset-3 show-listing-container">
+    <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 show-listing-container">
         <!-- HERO IMAGE -->
         <div class="show-hero-image">
             <img src="<%= (specificListing.image && specificListing.image.url) ? specificListing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" class="show-img" alt="listing_image">
@@ -63,7 +63,7 @@
     </div>
 
     <% if(currUser && specificListing.owner && specificListing.owner._id.equals(currUser._id)) { %>
-        <div class="btns offset-3 mb-3">
+        <div class="btns col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 mb-3">
             <a href="/listings/<%= specificListing._id %>/edit" class="btn btn-dark edit-btn">Edit</a>
             
             <form method="POST" action="/listings/<%= specificListing._id %>?_method=DELETE" class="d-inline">
@@ -72,9 +72,9 @@
         </div>
     <% } %>
 
-    <hr class="offset-3 col-6">
+    <hr class="col-10 offset-1 col-lg-6 offset-lg-3">
 
-    <div class="col-8 offset-3 mb-3">
+    <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 mb-3">
         <% if(currUser) { %>
             <h4>Leave a Review</h4>
             <form action="/listings/<%= specificListing._id %>/reviews" method="POST" novalidate class="needs-validation">
@@ -128,7 +128,7 @@
 
             <div class="row">
                 <% for(let review of specificListing.reviews) { %>
-                    <div class="review-card col-5 ms-3 mb-3">
+                    <div class="col-12 col-sm-6 col-md-5 review-card ms-md-3 mb-3">
                         <div class="review-card-body">
                             <div class="review-header d-flex align-items-center">
                                 <div class="review-avatar"><%= (review.author ? review.author.username : "A").charAt(0).toUpperCase() %></div>
@@ -152,9 +152,9 @@
         <% } %>
     </div>
 
-    <div class="col-8 offset-3 mb-3">
+    <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 mb-3">
         <h3>Where you'll be</h3>
-        <div id="map" style="height: 400px; width: 100%; border-radius: 15px; border: 1px solid #ddd;"></div>
+        <div id="map" class="show-map"></div>
     </div>
 </div>
 

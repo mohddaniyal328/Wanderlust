@@ -48,7 +48,7 @@
 | **Image Storage** | Cloudinary + multer-storage-cloudinary | CDN-backed image hosting with transforms |
 | **Maps** | Leaflet.js + OpenStreetMap | Free, open-source interactive maps |
 | **Geocoding** | Photon (photon.komoot.io) — free, no API key, OSM-based |
-| **Styling** | Bootstrap 5.3.3, Font Awesome 6, Starability CSS | Responsive UI, icons, star rating widgets |
+| **Styling** | Bootstrap 5.3.3, Font Awesome 6, Starability CSS, Custom CSS with media queries | Responsive UI, icons, star rating widgets, 3-tier breakpoints |
 | **Validation** | Joi | Schema-based request validation |
 | **Deployment** | Render | Free tier Node.js hosting with Git integration |
 
@@ -176,10 +176,18 @@ This separation makes the codebase testable, maintainable, and scalable.
 - Used for auth feedback, CRUD operations, validation errors
 
 ### 4.8 Responsive Design
-- Bootstrap 5.3.3 grid system for card layouts (3-column on desktop, 1 on mobile)
-- Sticky navbar with collapsible hamburger menu
-- Horizontally scrollable category bar on mobile
-- Footer with social media links
+- **3-tier breakpoint system**: Phones (≤576px), Tablets (≤768px), Desktop (≥992px)
+- Bootstrap 5.3.3 grid with responsive column classes (`col-12 col-md-10 col-lg-8`) across all pages
+- Show page: full-width on mobile, centered 8-column layout on desktop
+- Listing grid: 1 col (mobile) → 2 cols (tablet) → 3 cols (desktop) → 4 cols (XL)
+- Review cards: stack on mobile, side-by-side on tablet+
+- Navbar: collapsible hamburger menu with full-width search on mobile
+- Filter bar: horizontal scroll with compact icons on small screens
+- Forms (new/edit): full-width on mobile, centered on desktop
+- Sticky navbar with auto-height on mobile
+- Auth cards: responsive padding and font sizes
+- Error page: scaled-down title and icon on phones
+- Footer: compact layout with wrapped links on small screens
 
 ### 4.9 Social Sharing (Open Graph)
 - `boilerplate.ejs` includes OG and Twitter Card meta tags
@@ -454,6 +462,11 @@ image: {
 
 **Solution**: The image `set` validator ensures all listings have valid image URLs. Cloudinary URLs are constructed by the storage engine and are always valid CDN links.
 
+### Challenge 9: Responsive Layout Breakage
+**Problem**: The project used hardcoded Bootstrap grid classes (`col-8 offset-3`) throughout. On mobile devices, content appeared as a narrow strip pushed to the right side. Review cards used `col-5` which overflowed on small screens. Listing card images had fixed `height: 20rem` that looked oversized on phones.
+
+**Solution**: Implemented a 3-tier responsive breakpoint system. Replaced all fixed column classes with responsive alternatives (`col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2`). Review cards use `col-12 col-sm-6 col-md-5` to stack on mobile. Added comprehensive CSS media queries at 576px, 768px, and 992px breakpoints covering navbar, search, filter bar, listing cards, show page, review section, forms, auth pages, error page, and footer. Listing card images use a CSS class with responsive height (16rem on phone, 20rem on desktop).
+
 ---
 
 ## 10. Security Measures
@@ -510,7 +523,7 @@ image: {
 
 ### "Tell me about this project"
 
-> WanderLust is a full-stack vacation rental platform — essentially an Airbnb clone — built with Node.js, Express, MongoDB, and EJS. It supports full CRUD operations for property listings with cloud-based image storage on Cloudinary, interactive Leaflet maps with geocoding via OpenStreetMap, a review and rating system with denormalized caching, and advanced filtering by category, price range, and text search. I deployed it on Render with MongoDB Atlas as the database.
+> WanderLust is a full-stack vacation rental platform — essentially an Airbnb clone — built with Node.js, Express, MongoDB, and EJS. It supports full CRUD operations for property listings with cloud-based image storage on Cloudinary, interactive Leaflet maps with geocoding via OpenStreetMap, a review and rating system with denormalized caching, and advanced filtering by category, price range, and text search. The UI is fully responsive with a 3-tier breakpoint system for phones, tablets, and desktops. I deployed it on Render with MongoDB Atlas as the database.
 
 ### "What was the most challenging part?"
 
@@ -535,6 +548,7 @@ image: {
 > 3. **Testing**: Write unit and integration tests with Jest/Supertest
 > 4. **Features**: Add pagination, wishlists, user profiles, and booking functionality
 > 5. **Frontend**: Migrate to React/Next.js for a SPA experience with better UX
+> 6. **Responsive polish**: Add touch gestures for mobile map interaction, optimize filter bar for very small screens
 
 ### "Why did you choose this tech stack?"
 

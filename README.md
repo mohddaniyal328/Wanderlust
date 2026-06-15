@@ -47,7 +47,7 @@
 - **Reviews & Ratings** — Star-based rating system with rating breakdown
 - **Authentication** — Secure signup/login with Passport.js
 - **Authorization** — Only owners can edit/delete their own listings
-- **Responsive Design** — Works seamlessly on desktop and mobile
+- **Responsive Design** — Optimized for phones (576px), tablets (768px), and desktops with 3-tier media queries
 - **Flash Messages** — Real-time feedback for user actions
 - **Session Persistence** — MongoDB-backed sessions with secure cookies
 
