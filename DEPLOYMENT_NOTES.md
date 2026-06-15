@@ -3,33 +3,47 @@
 
 ---
 
-## Geocoding Refactor (June 15, 2026)
+## Rating Cache Refactor (June 15, 2026)
 
 | Change | Details |
 |--------|---------|
-| **New file** | `utils/geocode.js` — reusable `geocode(address)` function |
-| **Create flow** | `controllers/listings.js` now uses `geocode()` instead of inline fetch |
-| **Update flow** | `updateListing` now re-geocodes when location is changed |
-| **Fallback** | Jaipur `[75.7873, 26.9124]` on API failure, invalid address, or empty input |
+| **New field** | `ratingSum` on Listing model — running total of all review ratings |
+| **Create review** | Uses `$inc` to add rating to `ratingSum` and increment `reviewCount` (1 write) |
+| **Delete review** | Uses `$inc` to subtract rating from `ratingSum` and decrement `reviewCount` (1 write) |
+| **Migration** | Run `node init/migrateRatings.js` to backfill `ratingSum` for existing listings |
+| **Before** | Loaded ALL reviews into memory to sum, 2 DB writes per operation |
+| **After** | Zero reviews loaded, 1 DB write per operation |
 
 ---
 
-## Security Issues Identified (June 15, 2026) — FIXED
+## Security Fixes (June 15, 2026)
 
-| # | Issue | File | Fix Applied |
-|---|-------|------|-------------|
-| 1 | `.env` with real credentials may exist in git history | `.env` | **ACTION NEEDED**: Rotate credentials. Use `git filter-branch` or BFG to purge `.env` from history. |
-| 2 | Hardcoded fallback secret `"mysupersecretcode"` | `app.js:59,70` | **FIXED**: Removed fallback. App now throws if `SECRET` env var is not set. |
-| 3 | No rate limiting on login/signup | `routes/user.js` | **FIXED**: Added `express-rate-limit` (10 attempts per 15 min window) on auth routes. |
-| 4 | Logout via GET — vulnerable to CSRF logout | `routes/user.js:23` | **FIXED**: Changed to `router.post("/logout")`. Updated navbar to use POST form. |
-| 5 | No CSRF protection | global | **DEFERRED**: `csurf` is deprecated. Recommend `csrf-csrf` for future implementation. |
-| 6 | No security headers | `app.js` | **FIXED**: Added `helmet` middleware with CSP and crossOriginEmbedder disabled for compatibility. |
-| 7 | Rating cache can drift out of sync | `controllers/listings.js:55-59` | **FIXED**: Removed manual recalculation in `showListing`. Uses cached `averageRating` from model. |
-| 8 | No try/catch on geocoding fetch | `controllers/listings.js:71-78` | **FIXED**: Wrapped fetch in try/catch. Falls back to default coordinates on failure. |
-| 9 | `isOwner` crashes if `currUser` undefined | `middleware.js:34,71` | **FIXED**: Added `!res.locals.currUser` null check in both `isOwner` and `isReviewAuthor`. |
-| 10 | No XSS sanitization on user inputs | `app.js` | **FIXED**: Added `mongo-sanitize` middleware to prevent NoSQL injection. |
-| 11 | `uploads/` not in `.gitignore` | `.gitignore` | **FIXED**: Added `uploads/` to `.gitignore`. |
-| 12 | Express 5 makes `wrapAsync` redundant | `routes/*.js` | **FIXED**: Removed `wrapAsync` from all 3 route files. Express 5 handles async errors natively. |
+| # | Severity | Issue | File | Fix Applied |
+|---|----------|-------|------|-------------|
+| 1 | HIGH | Mass assignment — `req.body.listing` spread into DB | `controllers/listings.js` | **FIXED**: Whitelisted fields: title, description, location, country, price, category |
+| 2 | HIGH | Open redirect after login | `controllers/users.js` | **FIXED**: Validate redirectUrl starts with `/` and has no `://` |
+| 3 | MED | No rate limiting on listings/reviews | `app.js` | **FIXED**: Added `listingLimiter` (20/15min) and `reviewLimiter` (10/15min) |
+| 4 | MED | No file size limit on uploads | `routes/listing.js` | **FIXED**: Added `limits: { fileSize: 5MB }` to multer |
+| 5 | MED | No MIME type filter on uploads | `routes/listing.js` | **FIXED**: Added `fileFilter` allowing only png/jpg/jpeg |
+| 6 | MED | Error handler leaks internals | `app.js` | **FIXED**: Only pass `statusCode` + `message` to error template |
+| 7 | MED | Session cookie 7 days | `app.js` | **FIXED**: Reduced to 1 day |
+
+### Previously Fixed (June 15, 2026)
+
+| # | Issue | Status |
+|---|-------|--------|
+| 1 | Geocoding only on create, not update | **FIXED**: Re-geocodes on location change |
+| 2 | `.env` credentials in tracked file | **ACTION NEEDED**: Rotate credentials, purge git history |
+| 3 | Hardcoded fallback secret | **FIXED**: App throws if SECRET not set |
+| 4 | No rate limiting on auth routes | **FIXED**: 10 attempts/15min |
+| 5 | Logout via GET | **FIXED**: Changed to POST |
+| 6 | No CSRF protection | DEFERRED |
+| 7 | No security headers | **FIXED**: Added helmet |
+| 8 | No try/catch on geocoding | **FIXED**: Wrapped in try/catch with fallback |
+| 9 | `isOwner` crashes if currUser undefined | **FIXED**: Added null check |
+| 10 | No NoSQL injection protection | **FIXED**: Added mongo-sanitize |
+| 11 | `uploads/` not gitignored | **FIXED**: Added to .gitignore |
+| 12 | wrapAsync redundant with Express 5 | **FIXED**: Removed from route files |
 
 ---
 

@@ -1,20 +1,6 @@
 const Listing = require("../models/listing");
 const Review = require("../models/review");
 
-// Helper: Recalculate and cache rating on Listing
-async function updateListingRatingCache(listingId) {
-    const listing = await Listing.findById(listingId).populate("reviews");
-    if (listing.reviews.length > 0) {
-        const sum = listing.reviews.reduce((acc, r) => acc + r.rating, 0);
-        listing.averageRating = parseFloat((sum / listing.reviews.length).toFixed(1));
-        listing.reviewCount = listing.reviews.length;
-    } else {
-        listing.averageRating = 0;
-        listing.reviewCount = 0;
-    }
-    await listing.save();
-}
-
 // CREATE REVIEW
 module.exports.createReview = async (req, res) => {
     let listing = await Listing.findById(req.params.id);
@@ -23,15 +9,22 @@ module.exports.createReview = async (req, res) => {
         return res.redirect("/listings");
     }
     let newReview = new Review(req.body.review);
-    
-    // Assign the logged-in user as the author
-    newReview.author = req.user._id; 
-    
-    listing.reviews.push(newReview);
+    newReview.author = req.user._id;
 
+    listing.reviews.push(newReview);
     await newReview.save();
     await listing.save();
-    await updateListingRatingCache(listing._id);
+
+    // Incremental update: add this review's rating to the running total
+    const newSum = listing.ratingSum + newReview.rating;
+    const newCount = listing.reviewCount + 1;
+    await Listing.updateOne(
+        { _id: listing._id },
+        {
+            $inc: { ratingSum: newReview.rating, reviewCount: 1 },
+            $set: { averageRating: parseFloat((newSum / newCount).toFixed(1)) }
+        }
+    );
 
     req.flash("success", "New Review Created!");
     res.redirect(`/listings/${listing._id}`);
@@ -41,15 +34,32 @@ module.exports.createReview = async (req, res) => {
 module.exports.destroyReview = async (req, res) => {
     let { id, reviewId } = req.params;
 
-    // Remove the review reference from the Listing's reviews array
+    // Find the review to get its rating before deleting
+    let review = await Review.findById(reviewId);
+    if (!review) {
+        req.flash("error", "Review not found!");
+        return res.redirect(`/listings/${id}`);
+    }
+    let rating = review.rating;
+
+    // Remove review reference from listing and delete the document
     const listing = await Listing.findById(id);
     if (listing) {
         listing.reviews.pull(reviewId);
         await listing.save();
     }
-    // Delete the actual review document
     await Review.findByIdAndDelete(reviewId);
-    await updateListingRatingCache(id);
+
+    // Incremental update: subtract this review's rating from the running total
+    const newSum = Math.max(0, listing.ratingSum - rating);
+    const newCount = Math.max(0, listing.reviewCount - 1);
+    await Listing.updateOne(
+        { _id: id },
+        {
+            $inc: { ratingSum: -rating, reviewCount: -1 },
+            $set: { averageRating: newCount > 0 ? parseFloat((newSum / newCount).toFixed(1)) : 0 }
+        }
+    );
 
     req.flash("success", "Review Deleted!");
     res.redirect(`/listings/${id}`);

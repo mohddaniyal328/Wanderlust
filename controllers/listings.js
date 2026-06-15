@@ -55,12 +55,13 @@ module.exports.showListing = async (req, res) => {
     res.render("listings/show.ejs", { specificListing, averageRating: specificListing.averageRating });
 };
 
-// CREATE - Post New Listing (Updated for Optional File Upload)
+// CREATE - Post New Listing (Whitelisted fields to prevent mass assignment)
 module.exports.createListing = async (req, res, next) => {
-    const newListing = new Listing(req.body.listing);
+    const { title, description, location, country, price, category } = req.body.listing;
+    const newListing = new Listing({ title, description, location, country, price, category });
     newListing.owner = req.user._id;
 
-    const coordinates = await geocode(req.body.listing.location);
+    const coordinates = await geocode(location);
     newListing.geometry = { type: "Point", coordinates };
 
     if (req.file) {
@@ -83,27 +84,30 @@ module.exports.renderEditForm = async (req, res) => {
     res.render("listings/edit.ejs", { specificListing: listing }); 
 };
 
-// UPDATE - Put Update Listing (Updated for File Upload + Re-geocoding)
+// UPDATE - Put Update Listing (Whitelisted fields + re-geocoding)
 module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
-    
-    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true, runValidators: true });
+    const { title, description, location, country, price, category } = req.body.listing;
+
+    let listing = await Listing.findByIdAndUpdate(
+        id,
+        { title, description, location, country, price, category },
+        { new: true, runValidators: true }
+    );
     if (!listing) {
         req.flash("error", "Listing not found!");
         return res.redirect("/listings");
     }
 
     // Re-geocode if location was changed
-    if (req.body.listing.location) {
-        const coordinates = await geocode(req.body.listing.location);
+    if (location) {
+        const coordinates = await geocode(location);
         listing.geometry = { type: "Point", coordinates };
         await listing.save();
     }
 
     if (typeof req.file !== "undefined") {
-        let url = req.file.path;
-        let filename = req.file.filename;
-        listing.image = { url, filename };
+        listing.image = { url: req.file.path, filename: req.file.filename };
         await listing.save();
     }
 

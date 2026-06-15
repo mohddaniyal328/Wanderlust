@@ -1,7 +1,6 @@
 // Run once: node init/migrateRatings.js
 const mongoose = require("mongoose");
 const Listing = require("../models/listing");
-const Review = require("../models/review");
 require("dotenv").config({ path: require('path').resolve(__dirname, '../.env') });
 
 async function migrate() {
@@ -10,9 +9,11 @@ async function migrate() {
     for (let listing of listings) {
         if (listing.reviews.length > 0) {
             const sum = listing.reviews.reduce((a, r) => a + r.rating, 0);
+            listing.ratingSum = sum;
             listing.averageRating = parseFloat((sum / listing.reviews.length).toFixed(1));
             listing.reviewCount = listing.reviews.length;
         } else {
+            listing.ratingSum = 0;
             listing.averageRating = 0;
             listing.reviewCount = 0;
         }

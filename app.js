@@ -67,6 +67,22 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const listingLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: "Too many listing requests, please try again later.",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const reviewLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: "Too many review requests, please try again later.",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitize());
 app.use(methodOverride("_method"));
@@ -91,8 +107,8 @@ const sessionOptions = {
     resave: false,
     saveUninitialized: false,
     cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        expires: Date.now() + 1 * 24 * 60 * 60 * 1000,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -119,8 +135,8 @@ app.use((req, res, next) => {
 });
 
 // 8. ROUTE HANDLERS
-app.use("/listings", listingRouter);
-app.use("/listings/:id/reviews", reviewRouter);
+app.use("/listings", listingLimiter, listingRouter);
+app.use("/listings/:id/reviews", reviewLimiter, reviewRouter);
 app.use("/", authLimiter, userRouter);
 app.get("/", (req, res) => {
     res.redirect("/listings");
@@ -133,8 +149,10 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
     let { statusCode = 500, message = "Something went wrong!" } = err;
-    // Sending the whole 'err' object so error.ejs can see err.message
-    res.status(statusCode).render("error.ejs", { err });
+    if (process.env.NODE_ENV !== "production") {
+        console.error(err);
+    }
+    res.status(statusCode).render("error.ejs", { err: { statusCode, message } });
 });
 
 // 10. SERVER START

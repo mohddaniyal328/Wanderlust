@@ -32,6 +32,10 @@ const listingSchema = new Schema({
         enum: ["Trending", "Rooms", "Iconic cities", "Mountains", "Castles", "Amazing pools", "Camping", "Farms", "Arctic", "Domes", "Boats"],
         default: "Rooms"
     },
+    ratingSum: {
+        type: Number,
+        default: 0
+    },
     averageRating: {
         type: Number,
         default: 0

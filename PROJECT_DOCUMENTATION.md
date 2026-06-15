@@ -229,7 +229,8 @@ Three layers of authorization:
   location: String,
   country: String,
   category: String,       // enum: 11 categories, default: "Rooms"
-  averageRating: Number,  // denormalized, default: 0
+  ratingSum: Number,      // running total of all review ratings, default: 0
+  averageRating: Number,  // derived from ratingSum / reviewCount, default: 0
   reviewCount: Number,    // denormalized, default: 0
   reviews: [ObjectId → Review],  // references
   owner: ObjectId → User,        // reference
@@ -261,7 +262,7 @@ Three layers of authorization:
 ```
 
 ### Key Design Decisions
-- **Denormalized ratings** (`averageRating`, `reviewCount` on Listing) — Avoids expensive aggregation queries on every page load. Updated via `updateListingRatingCache()` on review create/delete.
+- **Denormalized ratings** (`ratingSum`, `averageRating`, `reviewCount` on Listing) — `ratingSum` is the running total of all review ratings. `averageRating` is derived from `ratingSum / reviewCount`. Updated via atomic `$inc` operations on review create/delete — no need to load reviews into memory.
 - **GeoJSON geometry** — Enables future geospatial queries (find listings near me) via MongoDB's `$geoNear`.
 - **Embedded review references** — `reviews[]` array on Listing for quick access, with cascade delete middleware for cleanup.
 
@@ -343,25 +344,35 @@ if (req.body.listing.location) {
 }
 ```
 
-### 8.2 Denormalized Rating Cache
+### 8.2 Denormalized Rating Cache (Incremental)
 ```javascript
-// controllers/reviews.js — updateListingRatingCache
-async function updateListingRatingCache(listingId) {
-    const listing = await Listing.findById(listingId).populate("reviews");
-    if (listing.reviews.length > 0) {
-        const sum = listing.reviews.reduce((acc, r) => acc + r.rating, 0);
-        listing.averageRating = parseFloat((sum / listing.reviews.length).toFixed(1));
-        listing.reviewCount = listing.reviews.length;
-    } else {
-        listing.averageRating = 0;
-        listing.reviewCount = 0;
+// controllers/reviews.js — createReview (after saving review)
+const newSum = listing.ratingSum + newReview.rating;
+const newCount = listing.reviewCount + 1;
+await Listing.updateOne(
+    { _id: listing._id },
+    {
+        $inc: { ratingSum: newReview.rating, reviewCount: 1 },
+        $set: { averageRating: parseFloat((newSum / newCount).toFixed(1)) }
     }
-    await listing.save();
-}
+);
+
+// controllers/reviews.js — destroyReview (after deleting review)
+const newSum = Math.max(0, listing.ratingSum - rating);
+const newCount = Math.max(0, listing.reviewCount - 1);
+await Listing.updateOne(
+    { _id: id },
+    {
+        $inc: { ratingSum: -rating, reviewCount: -1 },
+        $set: { averageRating: newCount > 0 ? parseFloat((newSum / newCount).toFixed(1)) : 0 }
+    }
+);
 ```
-- Called after every review create/delete
-- Avoids $group aggregation on every listing page load
-- Stored as `averageRating` (1 decimal) and `reviewCount` on the Listing document
+- Uses `ratingSum` (running total) + `reviewCount` as source of truth
+- `$inc` atomic operation: adds/subtracts the single review's rating
+- **Before**: Loaded ALL reviews into memory, reduced to sum, 2 DB writes per operation
+- **After**: Zero reviews loaded, 1 DB write per operation
+- `averageRating` is derived from `ratingSum / reviewCount` at write time
 
 ### 8.3 Cascade Review Cleanup
 ```javascript
@@ -415,9 +426,9 @@ image: {
 **Solution**: Extracted geocoding into a reusable `utils/geocode.js` utility with try/catch and a fallback to default coordinates (Jaipur, India). Added re-geocoding in the update flow so changing a location updates the map. The utility handles null/empty addresses, API failures, and fake locations gracefully.
 
 ### Challenge 3: Rating Consistency
-**Problem**: Computing average ratings via aggregation on every page load is expensive. But denormalized ratings can drift out of sync.
+**Problem**: Computing average ratings via aggregation on every page load is expensive. But denormalized ratings can drift out of sync. The initial implementation loaded ALL review documents into memory just to sum ratings, and used 2 DB writes per operation.
 
-**Solution**: Implemented a `updateListingRatingCache()` function that recalculates and saves ratings on every review create/delete. Created a `migrateRatings.js` script to backfill any inconsistencies.
+**Solution**: Added a `ratingSum` field (running total) to the Listing model. On review create/delete, use MongoDB's `$inc` atomic operator to add/subtract the single review's rating. This reduced the operation from 2 reads + 2 writes to 1 read + 1 write, with zero review documents loaded. Created a `migrateRatings.js` script to backfill `ratingSum` for existing listings.
 
 ### Challenge 4: Image Upload Edge Cases
 **Problem**: Users could submit empty image fields, `null` values, or no file at all — causing display issues.
@@ -427,7 +438,7 @@ image: {
 ### Challenge 5: Session Persistence Across Restarts
 **Problem**: Default Express sessions are stored in memory and lost on server restart (e.g., Render dyno cycling).
 
-**Solution**: Used `connect-mongo` to store sessions in the same MongoDB Atlas cluster. Sessions survive server restarts and are automatically cleaned up after 7 days.
+**Solution**: Used `connect-mongo` to store sessions in the same MongoDB Atlas cluster. Sessions survive server restarts and are automatically cleaned up after 1 day.
 
 ### Challenge 6: Reverse Proxy Headers
 **Problem**: Render uses a reverse proxy. Without proper configuration, `req.protocol` and `req.hostname` are wrong, breaking session cookies and redirects.
@@ -451,20 +462,23 @@ image: {
 | Measure | Implementation |
 |---------|---------------|
 | **Password Hashing** | passport-local-mongoose (automatic salt + hash) |
-| **Session Security** | `httpOnly`, `secure` (prod), `sameSite: "lax"` cookies |
+| **Session Security** | `httpOnly`, `secure` (prod), `sameSite: "lax"`, 1-day expiry |
 | **Env Validation** | Throws if `SECRET`/`DB_URL` missing in production |
 | **Input Validation** | Joi schemas for listings and reviews |
 | **Regex Injection Prevention** | Special characters escaped before RegExp construction |
 | **Authorization** | Owner-only edit/delete; author-only review delete |
+| **Mass Assignment Prevention** | Whitelisted fields in listing create/update |
+| **Open Redirect Prevention** | Validated redirectUrl after login |
+| **Rate Limiting** | Auth (10/15min), listings (20/15min), reviews (10/15min) |
+| **File Upload Security** | 5MB size limit + MIME type filter (png/jpg/jpeg only) |
+| **Error Disclosure Prevention** | Only statusCode + message passed to error template |
 | **Flash Messages** | User-friendly error feedback without exposing internals |
 | **.env in .gitignore** | Secrets not committed to version control |
 
 ### Known Security Gaps (Not Yet Implemented)
-- No rate limiting (add `express-rate-limit`)
 - No CSRF protection (add `csrf-sync`)
-- No security headers (add `helmet`)
-- Logout via GET instead of POST
-- No XSS sanitization on user-generated content
+- CSP disabled for CDN compatibility (configure whitelisted sources)
+- No XSS sanitization on user-generated content in Leaflet popups
 
 ---
 
