@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const wrapAsync = require("../utils/wrapAsync.js");
 const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 const listingController = require("../controllers/listings.js");
 
@@ -13,12 +12,12 @@ const upload = multer({ storage });
 
 // Grouping "/" routes
 router.route("/")
-    .get(wrapAsync(listingController.index))
+    .get(listingController.index)
     .post(
         isLoggedIn, 
         upload.single('listing[image]'), // Files go to Cloudinary here
         validateListing, 
-        wrapAsync(listingController.createListing)
+        listingController.createListing
     );
 
 // New Route
@@ -26,17 +25,17 @@ router.get("/new", isLoggedIn, listingController.renderNewForm);
 
 // Grouping "/:id" routes
 router.route("/:id")
-    .get(wrapAsync(listingController.showListing))
+    .get(listingController.showListing)
     .put(
         isLoggedIn, 
         isOwner, 
         upload.single('listing[image]'), 
         validateListing, 
-        wrapAsync(listingController.updateListing)
+        listingController.updateListing
     )
-    .delete(isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
+    .delete(isLoggedIn, isOwner, listingController.destroyListing);
 
 // Edit Route
-router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm));
+router.get("/:id/edit", isLoggedIn, isOwner, listingController.renderEditForm);
 
 module.exports = router;

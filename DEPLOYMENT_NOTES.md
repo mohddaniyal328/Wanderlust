@@ -1,9 +1,28 @@
-# WanderLust Deployment Session Summary
-## Date: June 9, 2026
+# WanderLust Deployment Notes
+## Last Updated: June 15, 2026
 
 ---
 
-## What Was Fixed (30 Issues)
+## Security Issues Identified (June 15, 2026) — FIXED
+
+| # | Issue | File | Fix Applied |
+|---|-------|------|-------------|
+| 1 | `.env` with real credentials may exist in git history | `.env` | **ACTION NEEDED**: Rotate credentials. Use `git filter-branch` or BFG to purge `.env` from history. |
+| 2 | Hardcoded fallback secret `"mysupersecretcode"` | `app.js:59,70` | **FIXED**: Removed fallback. App now throws if `SECRET` env var is not set. |
+| 3 | No rate limiting on login/signup | `routes/user.js` | **FIXED**: Added `express-rate-limit` (10 attempts per 15 min window) on auth routes. |
+| 4 | Logout via GET — vulnerable to CSRF logout | `routes/user.js:23` | **FIXED**: Changed to `router.post("/logout")`. Updated navbar to use POST form. |
+| 5 | No CSRF protection | global | **DEFERRED**: `csurf` is deprecated. Recommend `csrf-csrf` for future implementation. |
+| 6 | No security headers | `app.js` | **FIXED**: Added `helmet` middleware with CSP and crossOriginEmbedder disabled for compatibility. |
+| 7 | Rating cache can drift out of sync | `controllers/listings.js:55-59` | **FIXED**: Removed manual recalculation in `showListing`. Uses cached `averageRating` from model. |
+| 8 | No try/catch on geocoding fetch | `controllers/listings.js:71-78` | **FIXED**: Wrapped fetch in try/catch. Falls back to default coordinates on failure. |
+| 9 | `isOwner` crashes if `currUser` undefined | `middleware.js:34,71` | **FIXED**: Added `!res.locals.currUser` null check in both `isOwner` and `isReviewAuthor`. |
+| 10 | No XSS sanitization on user inputs | `app.js` | **FIXED**: Added `mongo-sanitize` middleware to prevent NoSQL injection. |
+| 11 | `uploads/` not in `.gitignore` | `.gitignore` | **FIXED**: Added `uploads/` to `.gitignore`. |
+| 12 | Express 5 makes `wrapAsync` redundant | `routes/*.js` | **FIXED**: Removed `wrapAsync` from all 3 route files. Express 5 handles async errors natively. |
+
+---
+
+## Previous Fixes (June 9, 2026 — 30 Issues)
 
 ### Crash Bugs Fixed (5)
 - `controllers/users.js` — Added missing `next` parameter to `signup`
@@ -42,20 +61,30 @@
 
 ---
 
-## Credentials
+## Deployment Steps (Render)
 
-### MongoDB Atlas
-- Cluster: `cluster0.970bv3p.mongodb.net`
-- Username: `mohddaniyal12b_db_user`
-- Password: `Wanderlust6969`
-- DB: `wanderlust`
+### Prerequisites
+- GitHub repo pushed with latest code
+- MongoDB Atlas cluster active with network access `0.0.0.0/0`
+- Cloudinary account with API keys
 
-### Cloudinary
-- Cloud Name: `dvnjod5oh`
-- API Key: `236521699624632`
-- API Secret: `NVWC2MaXhux_PRVlmjtkTL_2Qzo`
+### Steps
+1. Go to **render.com** → New Web Service → Connect GitHub repo
+2. **Build Command:** `npm install`
+3. **Start Command:** `npm start`
+4. Add environment variables in Render dashboard (NOT from .env file)
+5. Make sure Atlas Network Access allows `0.0.0.0/0`
+6. Verify deployment at `https://your-app.onrender.com/listings`
 
-### Render Environment Variables
+### Post-Deployment
+- Run `node init/seed.js` to populate listings (local only, or via Render shell)
+- Run `node init/seedReviews.js` to populate reviews
+- Run `node init/migrateRatings.js` to backfill rating caches
+
+---
+
+## Environment Variables (Render Dashboard)
+
 | Key | Value |
 |-----|-------|
 | `NODE_ENV` | `production` |
@@ -65,27 +94,21 @@
 | `CLOUD_API_KEY` | `236521699624632` |
 | `CLOUD_API_SECRET` | `NVWC2MaXhux_PRVlmjtkTL_2Qzo` |
 
-### User Accounts
-| Username | Password | Role |
-|----------|----------|------|
-| `demo` | `741` | 4 listings |
-| `demo2` | `741` | 4 listings |
-| `demo3` | `741` | 4 listings |
-
 ---
 
-## Deployment Steps (Render)
-1. Go to render.com → New Web Service → Connect GitHub repo
-2. Build: `npm install`
-3. Start: `npm start`
-4. Add environment variables in Render dashboard (NOT from .env file)
-5. Make sure Atlas Network Access allows 0.0.0.0/0
+## User Accounts
+
+| Username | Password | Listings |
+|----------|----------|----------|
+| `demo` | `741` | 4 |
+| `demo2` | `741` | 4 |
+| `demo3` | `741` | 4 |
 
 ---
 
 ## Important Notes
 - `.env` file is in `.gitignore` and NOT deployed to Render
 - Environment variables must be added manually in Render dashboard
-- Always reset Atlas password if it's been shared publicly
-- Run `node init/seed.js` to re-seed listings
-- Run `node init/seedReviews.js` to re-seed reviews
+- **Rotate Atlas password** if it has been shared publicly
+- Seed commands are for local dev; use Render shell for production seeding
+- Atlas cluster: `cluster0.970bv3p.mongodb.net`

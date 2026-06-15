@@ -14,10 +14,13 @@ const { MongoStore } = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const sanitize = require("mongo-sanitize");
 
-// Validate required env vars in production
+// Validate required env vars
+if (!process.env.SECRET) throw new Error("SECRET environment variable is required");
 if (process.env.NODE_ENV === "production") {
-    if (!process.env.SECRET) throw new Error("SECRET environment variable is required in production");
     if (!process.env.DB_URL) throw new Error("DB_URL environment variable is required in production");
 }
 
@@ -48,7 +51,24 @@ app.set("views", path.join(__dirname, "views"));
 app.engine('ejs', ejsMate);
 
 app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+}));
+
+// Rate limiting
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 attempts per window
+    message: "Too many attempts, please try again later.",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 app.use(express.urlencoded({ extended: true }));
+app.use(sanitize());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
@@ -56,7 +76,7 @@ app.use(express.static(path.join(__dirname, "/public")));
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     crypto: {
-        secret: process.env.SECRET || "mysupersecretcode",
+        secret: process.env.SECRET,
     },
     touchAfter: 24 * 3600,
 });
@@ -67,7 +87,7 @@ store.on("error", (err) => {
 
 const sessionOptions = {
     store,
-    secret: process.env.SECRET || "mysupersecretcode",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -101,7 +121,7 @@ app.use((req, res, next) => {
 // 8. ROUTE HANDLERS
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
-app.use("/", userRouter);
+app.use("/", authLimiter, userRouter);
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });

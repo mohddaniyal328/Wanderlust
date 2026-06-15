@@ -31,7 +31,9 @@
           <a class="nav-link" href="/login">Login</a>
         <% } %>
         <% if(currUser) { %>
-          <a class="nav-link" href="/logout">Logout</a>
+          <form action="/logout" method="POST" class="d-inline">
+            <button type="submit" class="nav-link btn btn-link">Logout</button>
+          </form>
         <% } %>
       </div>
     </div>

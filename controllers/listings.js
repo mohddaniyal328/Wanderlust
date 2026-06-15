@@ -51,14 +51,7 @@ module.exports.showListing = async (req, res) => {
         return res.redirect("/listings");
     }
 
-    // Compute average rating
-    let averageRating = 0;
-    if (specificListing.reviews && specificListing.reviews.length > 0) {
-        let sum = specificListing.reviews.reduce((acc, curr) => acc + curr.rating, 0);
-        averageRating = (sum / specificListing.reviews.length).toFixed(1);
-    }
-
-    res.render("listings/show.ejs", { specificListing, averageRating });
+    res.render("listings/show.ejs", { specificListing, averageRating: specificListing.averageRating });
 };
 
 // CREATE - Post New Listing (Updated for Optional File Upload)
@@ -68,14 +61,18 @@ module.exports.createListing = async (req, res, next) => {
 
     // 2. THIS IS THE GEOCODING MAN! 
     // We send the address to OpenStreetMap and ask for JSON back.
-    let response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-        {
-            headers: { 'User-Agent': 'Wanderlust_Student_Project' }
-        }
-    );
-
-    let data = await response.json();
+    let data = [];
+    try {
+        let response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+            {
+                headers: { 'User-Agent': 'Wanderlust_Student_Project' }
+            }
+        );
+        data = await response.json();
+    } catch (err) {
+        console.log("Geocoding failed, using default coordinates:", err.message);
+    }
 
     const newListing = new Listing(req.body.listing);
     newListing.owner = req.user._id;
