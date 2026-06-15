@@ -58,10 +58,15 @@ module.exports.showListing = async (req, res) => {
 // CREATE - Post New Listing (Whitelisted fields to prevent mass assignment)
 module.exports.createListing = async (req, res, next) => {
     const { title, description, location, country, price, category } = req.body.listing;
+
+    const { found, coordinates } = await geocode(location);
+    if (!found) {
+        req.flash("error", "Location not found. Please enter a valid city or address.");
+        return res.redirect("/listings/new");
+    }
+
     const newListing = new Listing({ title, description, location, country, price, category });
     newListing.owner = req.user._id;
-
-    const coordinates = await geocode(location);
     newListing.geometry = { type: "Point", coordinates };
 
     if (req.file) {
@@ -89,26 +94,36 @@ module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
     const { title, description, location, country, price, category } = req.body.listing;
 
-    let listing = await Listing.findByIdAndUpdate(
-        id,
-        { title, description, location, country, price, category },
-        { new: true, runValidators: true }
-    );
-    if (!listing) {
-        req.flash("error", "Listing not found!");
-        return res.redirect("/listings");
-    }
-
     // Re-geocode if location was changed
     if (location) {
-        const coordinates = await geocode(location);
-        listing.geometry = { type: "Point", coordinates };
-        await listing.save();
+        const { found, coordinates } = await geocode(location);
+        if (!found) {
+            req.flash("error", "Location not found. Please enter a valid city or address.");
+            return res.redirect(`/listings/${id}/edit`);
+        }
+        let listing = await Listing.findByIdAndUpdate(
+            id,
+            { title, description, location, country, price, category, geometry: { type: "Point", coordinates } },
+            { new: true, runValidators: true }
+        );
+        if (!listing) {
+            req.flash("error", "Listing not found!");
+            return res.redirect("/listings");
+        }
+    } else {
+        await Listing.findByIdAndUpdate(
+            id,
+            { title, description, location, country, price, category },
+            { new: true, runValidators: true }
+        );
     }
 
     if (typeof req.file !== "undefined") {
-        listing.image = { url: req.file.path, filename: req.file.filename };
-        await listing.save();
+        let listing = await Listing.findById(id);
+        if (listing) {
+            listing.image = { url: req.file.path, filename: req.file.filename };
+            await listing.save();
+        }
     }
 
     req.flash("success", "Listing Updated!");
