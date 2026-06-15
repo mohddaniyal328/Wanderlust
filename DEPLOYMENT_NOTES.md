@@ -3,6 +3,17 @@
 
 ---
 
+## Geocoding Refactor (June 15, 2026)
+
+| Change | Details |
+|--------|---------|
+| **New file** | `utils/geocode.js` — reusable `geocode(address)` function |
+| **Create flow** | `controllers/listings.js` now uses `geocode()` instead of inline fetch |
+| **Update flow** | `updateListing` now re-geocodes when location is changed |
+| **Fallback** | Jaipur `[75.7873, 26.9124]` on API failure, invalid address, or empty input |
+
+---
+
 ## Security Issues Identified (June 15, 2026) — FIXED
 
 | # | Issue | File | Fix Applied |

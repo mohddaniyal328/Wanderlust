@@ -1,4 +1,5 @@
 const Listing = require("../models/listing");
+const { geocode } = require("../utils/geocode");
 
 // INDEX - Show all listings (with search & filter)
 module.exports.index = async (req, res) => {
@@ -56,39 +57,11 @@ module.exports.showListing = async (req, res) => {
 
 // CREATE - Post New Listing (Updated for Optional File Upload)
 module.exports.createListing = async (req, res, next) => {
-    // 1. Grab the address the user typed in the 'Location' field
-    let address = req.body.listing.location;
-
-    // 2. THIS IS THE GEOCODING MAN! 
-    // We send the address to OpenStreetMap and ask for JSON back.
-    let data = [];
-    try {
-        let response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-            {
-                headers: { 'User-Agent': 'Wanderlust_Student_Project' }
-            }
-        );
-        data = await response.json();
-    } catch (err) {
-        console.log("Geocoding failed, using default coordinates:", err.message);
-    }
-
     const newListing = new Listing(req.body.listing);
     newListing.owner = req.user._id;
 
-    // 3. Check if the Geocoder actually found the place
-    if (data && data.length > 0) {
-        newListing.geometry = {
-            type: "Point",
-            coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
-        };
-    } else {
-        newListing.geometry = {
-            type: "Point",
-            coordinates: [75.7873, 26.9124] // Jaipur fallback
-        };
-    }
+    const coordinates = await geocode(req.body.listing.location);
+    newListing.geometry = { type: "Point", coordinates };
 
     if (req.file) {
         newListing.image = { url: req.file.path, filename: req.file.filename };
@@ -110,18 +83,23 @@ module.exports.renderEditForm = async (req, res) => {
     res.render("listings/edit.ejs", { specificListing: listing }); 
 };
 
-// UPDATE - Put Update Listing (Updated for File Upload)
+// UPDATE - Put Update Listing (Updated for File Upload + Re-geocoding)
 module.exports.updateListing = async (req, res) => {
     let { id } = req.params;
     
-    // 1. Update the text fields first
     let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true, runValidators: true });
     if (!listing) {
         req.flash("error", "Listing not found!");
         return res.redirect("/listings");
     }
 
-    // 2. ONLY update the image if the user actually uploaded a new file
+    // Re-geocode if location was changed
+    if (req.body.listing.location) {
+        const coordinates = await geocode(req.body.listing.location);
+        listing.geometry = { type: "Point", coordinates };
+        await listing.save();
+    }
+
     if (typeof req.file !== "undefined") {
         let url = req.file.path;
         let filename = req.file.filename;

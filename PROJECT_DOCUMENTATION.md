@@ -47,7 +47,7 @@
 | **Session Store** | connect-mongo (MongoDB) | Persistent sessions in the database |
 | **Image Storage** | Cloudinary + multer-storage-cloudinary | CDN-backed image hosting with transforms |
 | **Maps** | Leaflet.js + OpenStreetMap | Free, open-source interactive maps |
-| **Geocoding** | Nominatim (OSM) | Free geocoding API for address-to-coordinates |
+| **Geocoding** | Nominatim (OSM) — reusable `utils/geocode.js` with fallback |
 | **Styling** | Bootstrap 5.3.3, Font Awesome 6, Starability CSS | Responsive UI, icons, star rating widgets |
 | **Validation** | Joi | Schema-based request validation |
 | **Deployment** | Render | Free tier Node.js hosting with Git integration |
@@ -110,6 +110,7 @@ WANDERLUST/
 │   └── migrateRatings.js          # One-time migration for denormalized ratings
 │
 ├── utils/
+│   ├── geocode.js               # Nominatim geocoding with Jaipur fallback
 │   ├── wrapAsync.js               # Async error wrapper for route handlers
 │   └── ExpressError.js            # Custom error class with statusCode
 │
@@ -298,24 +299,49 @@ Three layers of authorization:
 
 ## 8. Key Implementations
 
-### 8.1 Geocoding on Listing Creation
+### 8.1 Geocoding Utility (Reusable)
 ```javascript
-// controllers/listings.js — createListing
-let response = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-    { headers: { 'User-Agent': 'Wanderlust_Student_Project' } }
-);
-let data = await response.json();
-if (data && data.length > 0) {
-    newListing.geometry = {
-        type: "Point",
-        coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
-    };
+// utils/geocode.js
+const FALLBACK_COORDS = [75.7873, 26.9124]; // Jaipur
+
+async function geocode(address) {
+    if (!address || typeof address !== "string" || address.trim() === "") {
+        return FALLBACK_COORDS;
+    }
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.trim())}&limit=1`,
+            { headers: { "User-Agent": "Wanderlust_Student_Project" } }
+        );
+        const data = await response.json();
+        if (data && data.length > 0) {
+            return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+        }
+    } catch (err) {
+        console.log("Geocoding failed, using default coordinates:", err.message);
+    }
+    return FALLBACK_COORDS;
 }
 ```
-- Uses Nominatim (OpenStreetMap) for free geocoding
+- Reusable `geocode(address)` function used by both create and update flows
+- Returns `[longitude, latitude]` on success, Jaipur fallback on failure
+- Handles null/empty addresses, API errors, and invalid locations (e.g., "Asgard")
 - Sends `User-Agent` header as required by Nominatim's usage policy
-- Fallback to Jaipur coordinates if no results found
+
+**Create flow** (`controllers/listings.js`):
+```javascript
+const coordinates = await geocode(req.body.listing.location);
+newListing.geometry = { type: "Point", coordinates };
+```
+
+**Update flow** — re-geocodes when location is changed:
+```javascript
+if (req.body.listing.location) {
+    const coordinates = await geocode(req.body.listing.location);
+    listing.geometry = { type: "Point", coordinates };
+    await listing.save();
+}
+```
 
 ### 8.2 Denormalized Rating Cache
 ```javascript
@@ -384,9 +410,9 @@ image: {
 **Solution**: Used `wrapAsync` utility to wrap async route handlers. Express 5's native handling serves as a safety net. This reduced boilerplate while maintaining reliability.
 
 ### Challenge 2: Geocoding Reliability
-**Problem**: The Nominatim API could fail due to network issues, rate limiting, or invalid addresses — crashing the listing creation flow.
+**Problem**: The Nominatim API could fail due to network issues, rate limiting, or invalid addresses — crashing the listing creation flow. Additionally, editing a listing's location did not update its map coordinates.
 
-**Solution**: Wrapped the fetch call in a try/catch block with a fallback to default coordinates (Jaipur, India). This ensures listings can always be created even if geocoding fails.
+**Solution**: Extracted geocoding into a reusable `utils/geocode.js` utility with try/catch and a fallback to default coordinates (Jaipur, India). Added re-geocoding in the update flow so changing a location updates the map. The utility handles null/empty addresses, API failures, and fake locations gracefully.
 
 ### Challenge 3: Rating Consistency
 **Problem**: Computing average ratings via aggregation on every page load is expensive. But denormalized ratings can drift out of sync.

@@ -96,7 +96,10 @@ WanderLust/
 ├── views/                   # EJS templates
 ├── public/                  # Static assets (CSS, JS)
 ├── init/                    # Database seeders
-└── utils/                   # Error handling utilities
+├── utils/                   # Geocoding & error handling utilities
+│   ├── geocode.js           # Nominatim geocoding with fallback
+│   ├── ExpressError.js      # Custom error class
+│   └── wrapAsync.js         # Async error wrapper
 ```
 
 ---
