@@ -32,9 +32,9 @@
 ### Test Accounts
 | Username | Password |
 |----------|----------|
-| `demo` | `741` |
-| `demo2` | `741` |
-| `demo3` | `741` |
+| `demo` | *(provided separately)* |
+| `demo2` | *(provided separately)* |
+| `demo3` | *(provided separately)* |
 
 ---
 
@@ -108,7 +108,7 @@ WanderLust/
 
 ```bash
 # Clone the repository
-git clone https://github.com/mohddaniyal328/Wanderlust.git
+git clone https://github.com/your-username/Wanderlust.git
 cd Wanderlust
 
 # Install dependencies
@@ -163,6 +163,6 @@ This project is open source and available under the [ISC License](LICENSE).
 
 <div align="center">
 
-**Built with ❤️ by [Mohd Daniyal](https://github.com/mohddaniyal328)**
+**Built with ❤️**
 
 </div>

@@ -125,9 +125,9 @@
 
 | Username | Password | Listings |
 |----------|----------|----------|
-| `demo` | `741` | 4 |
-| `demo2` | `741` | 4 |
-| `demo3` | `741` | 4 |
+| `demo` | *(see README)* | 4 |
+| `demo2` | *(see README)* | 4 |
+| `demo3` | *(see README)* | 4 |
 
 ---
 
@@ -136,4 +136,3 @@
 - Environment variables must be added manually in Render dashboard
 - **Rotate Atlas password** if it has been shared publicly
 - Seed commands are for local dev; use Render shell for production seeding
-- Atlas cluster: `cluster0.970bv3p.mongodb.net`
