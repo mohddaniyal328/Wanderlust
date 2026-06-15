@@ -3,7 +3,14 @@
 
 ---
 
-## Rating Cache Refactor (June 15, 2026)
+## Geocoding Switch: Nominatim → Photon (June 16, 2026)
+
+| Change | Details |
+|--------|---------|
+| **Why** | Nominatim blocks cloud server IPs (Render), causing all geocoding to fail in production |
+| **New API** | Photon (photon.komoot.io) — free, no API key, OSM-based, doesn't block cloud IPs |
+| **Caching** | In-memory cache + DB lookup to avoid repeated API calls for same address |
+| **Validation** | Invalid locations rejected with error message, fallback only on API failure |
 
 | Change | Details |
 |--------|---------|

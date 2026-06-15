@@ -62,7 +62,7 @@
 | **Database** | MongoDB Atlas (Mongoose ODM) |
 | **Authentication** | Passport.js + passport-local-mongoose |
 | **File Uploads** | Multer + Cloudinary |
-| **Maps** | Leaflet.js + OpenStreetMap + Nominatim Geocoding |
+| **Maps** | Leaflet.js + OpenStreetMap + Photon Geocoding |
 | **Templating** | EJS + ejs-mate |
 | **Frontend** | Bootstrap 5, Font Awesome, Custom CSS |
 | **Session Store** | connect-mongo (MongoDB-backed) |

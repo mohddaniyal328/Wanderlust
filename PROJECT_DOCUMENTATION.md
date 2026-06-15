@@ -47,7 +47,7 @@
 | **Session Store** | connect-mongo (MongoDB) | Persistent sessions in the database |
 | **Image Storage** | Cloudinary + multer-storage-cloudinary | CDN-backed image hosting with transforms |
 | **Maps** | Leaflet.js + OpenStreetMap | Free, open-source interactive maps |
-| **Geocoding** | Nominatim (OSM) — reusable `utils/geocode.js` with fallback |
+| **Geocoding** | Photon (photon.komoot.io) — free, no API key, OSM-based |
 | **Styling** | Bootstrap 5.3.3, Font Awesome 6, Starability CSS | Responsive UI, icons, star rating widgets |
 | **Validation** | Joi | Schema-based request validation |
 | **Deployment** | Render | Free tier Node.js hosting with Git integration |
@@ -146,7 +146,7 @@ This separation makes the codebase testable, maintainable, and scalable.
 
 ### 4.3 Interactive Maps (Leaflet + GeoJSON)
 - Each listing stores GeoJSON `Point` geometry (longitude, latitude)
-- On creation, the location address is geocoded via Nominatim (OpenStreetMap)
+- On creation, the location address is geocoded via Photon (OpenStreetMap-based)
 - Fallback to Jaipur coordinates if geocoding fails
 - Show page renders a Leaflet map centered on the listing with a custom red house marker
 - Popup displays listing image, title, location, price, and GST-inclusive total
@@ -302,45 +302,44 @@ Three layers of authorization:
 
 ### 8.1 Geocoding Utility (Reusable)
 ```javascript
-// utils/geocode.js
-const FALLBACK_COORDS = [75.7873, 26.9124]; // Jaipur
-
+// utils/geocode.js — uses Photon (photon.komoot.io)
 async function geocode(address) {
-    if (!address || typeof address !== "string" || address.trim() === "") {
-        return FALLBACK_COORDS;
+    // ...
+    const response = await fetch(
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(address.trim())}&limit=1`,
+    );
+    const data = await response.json();
+    if (data && data.features && data.features.length > 0) {
+        const coords = data.features[0].geometry.coordinates; // [lon, lat]
+        return { found: true, coordinates: coords };
     }
-    try {
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.trim())}&limit=1`,
-            { headers: { "User-Agent": "Wanderlust_Student_Project" } }
-        );
-        const data = await response.json();
-        if (data && data.length > 0) {
-            return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-        }
-    } catch (err) {
-        console.log("Geocoding failed, using default coordinates:", err.message);
-    }
-    return FALLBACK_COORDS;
+    return { found: false };
 }
 ```
-- Reusable `geocode(address)` function used by both create and update flows
-- Returns `[longitude, latitude]` on success, Jaipur fallback on failure
-- Handles null/empty addresses, API errors, and invalid locations (e.g., "Asgard")
-- Sends `User-Agent` header as required by Nominatim's usage policy
+- Uses Photon API (free, no API key, OSM-based) — doesn't block cloud IPs like Nominatim
+- Returns `{ found: true, coordinates }` on success, `{ found: false }` if location doesn't exist
+- In-memory cache + DB lookup to avoid repeated API calls for same address
+- Fallback to Jaipur `[75.7873, 26.9124]` if API fails
 
 **Create flow** (`controllers/listings.js`):
 ```javascript
-const coordinates = await geocode(req.body.listing.location);
+const { found, coordinates } = await geocode(location);
+if (!found) {
+    req.flash("error", "Location not found. Please enter a valid city or address.");
+    return res.redirect("/listings/new");
+}
 newListing.geometry = { type: "Point", coordinates };
 ```
 
 **Update flow** — re-geocodes when location is changed:
 ```javascript
-if (req.body.listing.location) {
-    const coordinates = await geocode(req.body.listing.location);
-    listing.geometry = { type: "Point", coordinates };
-    await listing.save();
+if (location) {
+    const { found, coordinates } = await geocode(location);
+    if (!found) {
+        req.flash("error", "Location not found. Please enter a valid city or address.");
+        return res.redirect(`/listings/${id}/edit`);
+    }
+    // update with new coordinates
 }
 ```
 
@@ -421,9 +420,9 @@ image: {
 **Solution**: Used `wrapAsync` utility to wrap async route handlers. Express 5's native handling serves as a safety net. This reduced boilerplate while maintaining reliability.
 
 ### Challenge 2: Geocoding Reliability
-**Problem**: The Nominatim API could fail due to network issues, rate limiting, or invalid addresses — crashing the listing creation flow. Additionally, editing a listing's location did not update its map coordinates.
+**Problem**: Nominatim (OpenStreetMap's free geocoding API) blocks cloud server IPs like Render, causing all geocoding to fail in production. Editing a listing's location also didn't update its map coordinates.
 
-**Solution**: Extracted geocoding into a reusable `utils/geocode.js` utility with try/catch and a fallback to default coordinates (Jaipur, India). Added re-geocoding in the update flow so changing a location updates the map. The utility handles null/empty addresses, API failures, and fake locations gracefully.
+**Solution**: Switched to Photon (photon.komoot.io) — a free, OSM-based geocoding API that doesn't block cloud IPs. Extracted geocoding into a reusable `utils/geocode.js` utility with in-memory caching, invalid location rejection, and a fallback to Jaipur coordinates on API failure. Added re-geocoding in the update flow.
 
 ### Challenge 3: Rating Consistency
 **Problem**: Computing average ratings via aggregation on every page load is expensive. But denormalized ratings can drift out of sync. The initial implementation loaded ALL review documents into memory just to sum ratings, and used 2 DB writes per operation.
