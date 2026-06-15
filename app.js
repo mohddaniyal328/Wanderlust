@@ -84,7 +84,12 @@ const reviewLimiter = rateLimit({
 });
 
 app.use(express.urlencoded({ extended: true }));
-app.use(sanitize());
+app.use((req, res, next) => {
+    if (req.body) req.body = sanitize(req.body);
+    if (req.query) req.query = sanitize(req.query);
+    if (req.params) req.params = sanitize(req.params);
+    next();
+});
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
