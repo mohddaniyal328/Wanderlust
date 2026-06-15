@@ -1,14 +1,5 @@
 const FALLBACK_COORDS = [75.7873, 26.9124]; // Jaipur
 
-let geocoder = null;
-function getGeocoder() {
-    if (!geocoder && process.env.MAPBOX_TOKEN) {
-        const mapboxClient = require("@mapbox/mapbox-sdk/services/geocoding");
-        geocoder = mapboxClient({ accessToken: process.env.MAPBOX_TOKEN });
-    }
-    return geocoder;
-}
-
 const geocodeCache = new Map();
 
 async function geocode(address) {
@@ -22,29 +13,23 @@ async function geocode(address) {
         return geocodeCache.get(normalized);
     }
 
-    const client = getGeocoder();
-    if (!client) {
-        console.log("MAPBOX_TOKEN not set, using fallback coordinates");
-        const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
-        geocodeCache.set(normalized, result);
-        return result;
-    }
-
     try {
-        const response = await client
-            .forwardGeocode({
-                query: address.trim(),
-                limit: 1,
-            })
-            .send();
+        const response = await fetch(
+            `https://photon.komoot.io/api/?q=${encodeURIComponent(address.trim())}&limit=1`,
+        );
 
-        const features = response.body.features;
+        if (response.status === 429) {
+            console.log("Photon rate-limited, using fallback coordinates");
+            const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
+            geocodeCache.set(normalized, result);
+            return result;
+        }
 
-        if (features && features.length > 0) {
-            const result = {
-                found: true,
-                coordinates: features[0].center // [longitude, latitude]
-            };
+        const data = await response.json();
+
+        if (data && data.features && data.features.length > 0) {
+            const coords = data.features[0].geometry.coordinates; // [longitude, latitude]
+            const result = { found: true, coordinates: coords };
             geocodeCache.set(normalized, result);
             return result;
         }
@@ -52,7 +37,7 @@ async function geocode(address) {
         return { found: false };
 
     } catch (err) {
-        console.log("Mapbox geocoding failed, using fallback:", err.message);
+        console.log("Geocoding API failed, using fallback:", err.message);
         const result = { found: true, coordinates: FALLBACK_COORDS, fallback: true };
         geocodeCache.set(normalized, result);
         return result;
