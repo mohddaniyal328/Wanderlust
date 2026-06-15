@@ -113,11 +113,11 @@
 | Key | Value |
 |-----|-------|
 | `NODE_ENV` | `production` |
-| `DB_URL` | `mongodb+srv://mohddaniyal12b_db_user:Wanderlust6969@cluster0.970bv3p.mongodb.net/wanderlust?retryWrites=true&w=majority` |
-| `SECRET` | `a3f8b2c9d1e5g7h0i4j6k8l2m5n7o1` |
-| `CLOUD_NAME` | `dvnjod5oh` |
-| `CLOUD_API_KEY` | `236521699624632` |
-| `CLOUD_API_SECRET` | `NVWC2MaXhux_PRVlmjtkTL_2Qzo` |
+| `DB_URL` | Your MongoDB Atlas connection string |
+| `SECRET` | Your random session secret |
+| `CLOUD_NAME` | Your Cloudinary cloud name |
+| `CLOUD_API_KEY` | Your Cloudinary API key |
+| `CLOUD_API_SECRET` | Your Cloudinary API secret |
 
 ---
 

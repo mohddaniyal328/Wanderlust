@@ -73,8 +73,8 @@ WANDERLUST/
 │   └── user.js             # User schema (passport-local-mongoose plugin)
 │
 ├── controllers/
-│   ├── listings.js         # CRUD logic for listings + geocoding
-│   ├── reviews.js          # Create/delete reviews + rating cache update
+│   ├── listings.js         # CRUD logic for listings + geocoding + whitelisted fields
+│   ├── reviews.js          # Create/delete reviews + $inc rating cache update
 │   └── users.js            # Signup, login, logout
 │
 ├── routes/
@@ -160,7 +160,7 @@ This separation makes the codebase testable, maintainable, and scalable.
 
 ### 4.5 Review & Rating System
 - Logged-in users can submit reviews with 1-5 star rating (using Starability CSS) and a comment
-- **Rating cache**: `averageRating` and `reviewCount` denormalized on the Listing document for fast reads
+- **Rating cache**: `ratingSum`, `averageRating`, and `reviewCount` denormalized on the Listing document for fast reads. Uses atomic `$inc` operations.
 - **Rating breakdown**: Show page displays a bar chart of 1-5 star distribution
 - Review authors can delete their own reviews
 - Cascade cleanup: Deleting a listing removes all its reviews
@@ -206,7 +206,7 @@ Three layers of authorization:
 3. **`isReviewAuthor`** — Compares `review.author` with `currUser._id`. Only the review author can delete their review.
 
 ### Session Configuration
-- Cookie expires after 7 days
+- Cookie expires after 1 day
 - `httpOnly: true` prevents XSS access to session cookie
 - `secure: true` in production (HTTPS only)
 - `sameSite: "lax"` for CSRF protection
@@ -515,7 +515,7 @@ image: {
 
 ### "What was the most challenging part?"
 
-> **Rating consistency with denormalized data.** I wanted fast reads on the listings page, so I denormalized `averageRating` and `reviewCount` onto the Listing document. The challenge was keeping these in sync when reviews are created or deleted. I solved this by creating a `updateListingRatingCache()` function that recalculates from the actual reviews array on every mutation, and built a migration script to backfill any inconsistencies.
+> **Rating consistency with denormalized data.** I wanted fast reads on the listings page, so I denormalized `ratingSum`, `averageRating`, and `reviewCount` onto the Listing document. The challenge was keeping these in sync when reviews are created or deleted. I solved this by using MongoDB's `$inc` atomic operator to add/subtract the single review's rating from a running total — no need to load all reviews into memory. I also built a migration script to backfill any inconsistencies.
 
 ### "How did you handle authentication?"
 
@@ -531,7 +531,7 @@ image: {
 
 ### "What would you improve next?"
 
-> 1. **Security**: Add rate limiting, CSRF protection, and security headers (helmet)
+> 1. **Security**: Add CSRF protection (rate limiting, security headers, mass assignment prevention already done)
 > 2. **Performance**: Add MongoDB text indexes for search instead of regex
 > 3. **Testing**: Write unit and integration tests with Jest/Supertest
 > 4. **Features**: Add pagination, wishlists, user profiles, and booking functionality
