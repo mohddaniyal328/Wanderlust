@@ -76,18 +76,24 @@ async function main() {
         console.log(`Added ${numReviews} reviews to "${listing.title}"`);
     }
 
-    // Recalculate ratings for all listings
+    // Recalculate ratings for all listings from actual reviews
     for (const listing of listings) {
         const populated = await Listing.findById(listing._id).populate("reviews");
-        if (populated.reviews.length > 0) {
-            const sum = populated.reviews.reduce((acc, r) => acc + r.rating, 0);
-            populated.averageRating = parseFloat((sum / populated.reviews.length).toFixed(1));
-            populated.reviewCount = populated.reviews.length;
-        } else {
-            populated.averageRating = 0;
-            populated.reviewCount = 0;
-        }
-        await populated.save();
+        const reviews = populated.reviews;
+        const count = reviews.length;
+        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+        const avg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 0;
+
+        await Listing.updateOne(
+            { _id: listing._id },
+            {
+                $set: {
+                    ratingSum: sum,
+                    reviewCount: count,
+                    averageRating: avg
+                }
+            }
+        );
     }
 
     console.log(`\nSeeded ${reviewIdx} total reviews!`);

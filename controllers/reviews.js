@@ -15,14 +15,21 @@ module.exports.createReview = async (req, res) => {
     await newReview.save();
     await listing.save();
 
-    // Incremental update: add this review's rating to the running total
-    const newSum = listing.ratingSum + newReview.rating;
-    const newCount = listing.reviewCount + 1;
+    // Recalculate ratings from all reviews (safe against drift)
+    const populated = await Listing.findById(listing._id).populate("reviews");
+    const reviews = populated.reviews;
+    const count = reviews.length;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    const avg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 0;
+
     await Listing.updateOne(
         { _id: listing._id },
         {
-            $inc: { ratingSum: newReview.rating, reviewCount: 1 },
-            $set: { averageRating: parseFloat((newSum / newCount).toFixed(1)) }
+            $set: {
+                ratingSum: sum,
+                reviewCount: count,
+                averageRating: avg
+            }
         }
     );
 
@@ -40,7 +47,6 @@ module.exports.destroyReview = async (req, res) => {
         req.flash("error", "Review not found!");
         return res.redirect(`/listings/${id}`);
     }
-    let rating = review.rating;
 
     // Remove review reference from listing and delete the document
     const listing = await Listing.findById(id);
@@ -50,14 +56,21 @@ module.exports.destroyReview = async (req, res) => {
     }
     await Review.findByIdAndDelete(reviewId);
 
-    // Incremental update: subtract this review's rating from the running total
-    const newSum = Math.max(0, listing.ratingSum - rating);
-    const newCount = Math.max(0, listing.reviewCount - 1);
+    // Recalculate ratings from remaining reviews (safe against drift)
+    const populated = await Listing.findById(id).populate("reviews");
+    const reviews = populated.reviews;
+    const count = reviews.length;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    const avg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 0;
+
     await Listing.updateOne(
         { _id: id },
         {
-            $inc: { ratingSum: -rating, reviewCount: -1 },
-            $set: { averageRating: newCount > 0 ? parseFloat((newSum / newCount).toFixed(1)) : 0 }
+            $set: {
+                ratingSum: sum,
+                reviewCount: count,
+                averageRating: avg
+            }
         }
     );
 
