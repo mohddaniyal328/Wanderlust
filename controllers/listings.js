@@ -33,17 +33,18 @@ module.exports.index = async (req, res) => {
         if (maxPrice && !isNaN(max)) filter.price.$lte = max;
     }
 
-    // Pagination
-    const currentPage = parseInt(page) || 1;
+    // Pagination (validated)
+    const currentPage = Math.max(1, parseInt(page) || 1);
     const totalItems = await Listing.countDocuments(filter);
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    const safePage = Math.min(currentPage, totalPages);
     const allListings = await Listing.find(filter)
-        .skip((currentPage - 1) * ITEMS_PER_PAGE)
+        .skip((safePage - 1) * ITEMS_PER_PAGE)
         .limit(ITEMS_PER_PAGE);
 
     res.render("listings/index.ejs", {
         allListings, q, category, minPrice, maxPrice,
-        currentPage, totalPages, totalItems
+        currentPage: safePage, totalPages, totalItems
     });
 };
 
@@ -207,8 +208,22 @@ module.exports.createBooking = async (req, res) => {
         return res.redirect("/listings");
     }
 
+    // Prevent owner from booking own listing
+    if (listing.owner.equals(req.user._id)) {
+        req.flash("error", "You cannot book your own listing!");
+        return res.redirect(`/listings/${id}`);
+    }
+
     const checkInDate = new Date(checkin);
     const checkOutDate = new Date(checkout);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Reject past dates
+    if (checkInDate < today) {
+        req.flash("error", "Check-in date cannot be in the past!");
+        return res.redirect(`/listings/${id}`);
+    }
 
     if (checkOutDate <= checkInDate) {
         req.flash("error", "Checkout date must be after check-in date!");

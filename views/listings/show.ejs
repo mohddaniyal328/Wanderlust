@@ -101,7 +101,8 @@
                             </div>
                             <div class="col-6">
                                 <label for="checkout" class="form-label">Check-out</label>
-                                <input type="date" id="checkout" name="checkout" class="form-control" required>
+                                <input type="date" id="checkout" name="checkout" class="form-control" required
+                                    min="<%= new Date(Date.now() + 86400000).toISOString().split('T')[0] %>">
                             </div>
                         </div>
                         <div id="booking-summary" class="booking-summary-info mt-2" style="display: none;">

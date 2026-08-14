@@ -41,22 +41,16 @@ module.exports.createReview = async (req, res) => {
 module.exports.destroyReview = async (req, res) => {
     let { id, reviewId } = req.params;
 
-    // Find the review to get its rating before deleting
     let review = await Review.findById(reviewId);
     if (!review) {
         req.flash("error", "Review not found!");
         return res.redirect(`/listings/${id}`);
     }
 
-    // Remove review reference from listing and delete the document
-    const listing = await Listing.findById(id);
-    if (listing) {
-        listing.reviews.pull(reviewId);
-        await listing.save();
-    }
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
     await Review.findByIdAndDelete(reviewId);
 
-    // Recalculate ratings from remaining reviews (safe against drift)
+    // Recalculate ratings from remaining reviews
     const populated = await Listing.findById(id).populate("reviews");
     const reviews = populated.reviews;
     const count = reviews.length;
