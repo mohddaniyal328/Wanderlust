@@ -18,7 +18,18 @@
             <% if(currUser) { %>
                 <form method="POST" action="/listings/<%= specificListing._id %>/wishlist" class="d-inline">
                     <button type="submit" class="btn btn-link wishlist-btn" title="Save to wishlist">
-                        <% if(currUser.wishlists && currUser.wishlists.includes(specificListing._id.toString())) { %>
+                        <% 
+                            let isWishlisted = false;
+                            if(currUser.wishlists && currUser.wishlists.length > 0) {
+                                for(let w of currUser.wishlists) {
+                                    if(w.toString() === specificListing._id.toString()) {
+                                        isWishlisted = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        %>
+                        <% if(isWishlisted) { %>
                             <i class="fa-solid fa-heart" style="color: #fe424d; font-size: 1.4rem;"></i>
                         <% } else { %>
                             <i class="fa-regular fa-heart" style="color: #222; font-size: 1.4rem;"></i>

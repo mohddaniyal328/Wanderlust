@@ -166,7 +166,7 @@ module.exports.toggleWishlist = async (req, res) => {
     const User = require("../models/user");
 
     const user = await User.findById(userId);
-    const index = user.wishlists.indexOf(id);
+    const index = user.wishlists.findIndex(w => w.toString() === id);
 
     if (index === -1) {
         user.wishlists.push(id);
@@ -175,12 +175,16 @@ module.exports.toggleWishlist = async (req, res) => {
     }
     await user.save();
 
-    const isWishlisted = index === -1;
-    if (req.headers["x-requested-with"] === "XMLHttpRequest") {
-        return res.json({ wishlisted: isWishlisted });
-    }
-    req.flash("success", isWishlisted ? "Added to wishlists!" : "Removed from wishlists!");
-    res.redirect("back");
+    // Refresh the session user so currUser.wishlists is up to date
+    req.login(user, (err) => {
+        if (err) return res.redirect("back");
+        const isWishlisted = index === -1;
+        if (req.headers["x-requested-with"] === "XMLHttpRequest") {
+            return res.json({ wishlisted: isWishlisted });
+        }
+        req.flash("success", isWishlisted ? "Added to wishlists!" : "Removed from wishlists!");
+        res.redirect(`/listings/${id}`);
+    });
 };
 
 // WISHLISTS PAGE - Show all wishlisted listings
