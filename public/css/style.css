@@ -1564,6 +1564,68 @@ body {
 }
 
 /* ===========================
+   MY LISTINGS PAGE
+   =========================== */
+
+.my-listing-card {
+    border: 1px solid #ebebeb !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.my-listing-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.my-listing-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.my-listing-edit-btn {
+    background: #f0f0f0 !important;
+    color: #222 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem !important;
+    transition: background 0.2s;
+}
+
+.my-listing-edit-btn:hover {
+    background: #222 !important;
+    color: #fff !important;
+}
+
+.my-listing-edit-btn i {
+    font-size: 0.7rem;
+}
+
+.my-listing-delete-btn {
+    background: transparent !important;
+    color: #dc3545 !important;
+    border: 1.5px solid #dc3545 !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem !important;
+    transition: all 0.2s;
+}
+
+.my-listing-delete-btn:hover {
+    background: #dc3545 !important;
+    color: #fff !important;
+}
+
+.my-listing-delete-btn i {
+    font-size: 0.7rem;
+}
+
+/* ===========================
    PAGINATION
    =========================== */
 

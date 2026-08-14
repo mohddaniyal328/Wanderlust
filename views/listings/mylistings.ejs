@@ -1,36 +1,44 @@
 <% layout("/layouts/boilerplate") -%>
 
-<h3 class="mt-3">My Listings</h3>
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <h3 class="mb-0">My Listings</h3>
+    <span class="text-muted" style="font-size: 0.9rem;"><%= allListings.length %> listing<%= allListings.length !== 1 ? 's' : '' %></span>
+</div>
 
 <% if(allListings.length > 0) { %>
-    <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
+    <div class="row mt-3">
         <% for(let listing of allListings) { %>
-            <div class="col mb-4">
-                <a href="/listings/<%= listing._id %>" class="listing-link">
-                    <div class="card listing-card">
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
+                <div class="card listing-card my-listing-card">
+                    <a href="/listings/<%= listing._id %>" class="listing-link">
                         <img 
                             src="<%= (listing.image && listing.image.url) ? listing.image.url : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1080' %>" 
                             class="card-img-top listing-card-img" 
                             alt="listing image"
                         >
-                        <div class="card-img-overlay"></div>
-                        <div class="card-body">
-                            <p class="card-text">
-                                <b><%= listing.title %></b> <br>
-                                <span class="gst-base-price" data-price="<%= listing.price %>">&#8377; <%= listing.price.toLocaleString("en-IN") %></span> / night
+                    </a>
+                    <div class="card-body">
+                        <a href="/listings/<%= listing._id %>" class="listing-link">
+                            <p class="card-text mb-1">
+                                <b><%= listing.title %></b>
                             </p>
-                            <% if(listing.category) { %>
-                                <span class="category-tag"><%= listing.category %></span>
-                            <% } %>
-                            <div class="mt-2">
-                                <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm btn-outline-dark">Edit</a>
-                                <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this listing?')">Delete</button>
-                                </form>
-                            </div>
+                            <span class="gst-base-price" data-price="<%= listing.price %>">&#8377; <%= listing.price.toLocaleString("en-IN") %></span> <span class="text-muted" style="font-size: 0.85rem;">/ night</span>
+                        </a>
+                        <% if(listing.category) { %>
+                            <span class="category-tag"><%= listing.category %></span>
+                        <% } %>
+                        <div class="my-listing-actions mt-2">
+                            <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm my-listing-edit-btn">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </a>
+                            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
+                                <button class="btn btn-sm my-listing-delete-btn" onclick="return confirm('Delete this listing?')">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </a>
+                </div>
             </div>
         <% } %>
     </div>
