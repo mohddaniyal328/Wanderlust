@@ -1,15 +1,17 @@
 const Listing = require("../models/listing");
 const { geocode } = require("../utils/geocode");
 
-// INDEX - Show all listings (with search & filter)
+const ITEMS_PER_PAGE = 6;
+
+// INDEX - Show all listings (with search, filter & pagination)
 module.exports.index = async (req, res) => {
-    let { q, category, minPrice, maxPrice } = req.query;
+    let { q, category, minPrice, maxPrice, page } = req.query;
     let filter = {};
 
     // 1. Text search: match title, location, or country
     if (q) {
         const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(escaped, "i"); // case-insensitive
+        const regex = new RegExp(escaped, "i");
         filter.$or = [
             { title: regex },
             { location: regex },
@@ -31,9 +33,18 @@ module.exports.index = async (req, res) => {
         if (maxPrice && !isNaN(max)) filter.price.$lte = max;
     }
 
-    const allListings = await Listing.find(filter);
+    // Pagination
+    const currentPage = parseInt(page) || 1;
+    const totalItems = await Listing.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const allListings = await Listing.find(filter)
+        .skip((currentPage - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
 
-    res.render("listings/index.ejs", { allListings, q, category, minPrice, maxPrice });
+    res.render("listings/index.ejs", {
+        allListings, q, category, minPrice, maxPrice,
+        currentPage, totalPages, totalItems
+    });
 };
 
 // NEW - Render form to create listing
@@ -140,4 +151,119 @@ module.exports.destroyListing = async (req, res) => {
     }
     req.flash("success", "Listing Deleted!");
     res.redirect("/listings");
+};
+
+// MY LISTINGS - Show current user's listings
+module.exports.myListings = async (req, res) => {
+    const myListings = await Listing.find({ owner: req.user._id });
+    res.render("listings/mylistings.ejs", { allListings: myListings });
+};
+
+// TOGGLE WISHLIST - Add/remove listing from user's wishlist
+module.exports.toggleWishlist = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const User = require("../models/user");
+
+    const user = await User.findById(userId);
+    const index = user.wishlists.indexOf(id);
+
+    if (index === -1) {
+        user.wishlists.push(id);
+    } else {
+        user.wishlists.splice(index, 1);
+    }
+    await user.save();
+
+    const isWishlisted = index === -1;
+    if (req.headers["x-requested-with"] === "XMLHttpRequest") {
+        return res.json({ wishlisted: isWishlisted });
+    }
+    req.flash("success", isWishlisted ? "Added to wishlists!" : "Removed from wishlists!");
+    res.redirect("back");
+};
+
+// WISHLISTS PAGE - Show all wishlisted listings
+module.exports.wishlists = async (req, res) => {
+    const User = require("../models/user");
+    const user = await User.findById(req.user._id).populate("wishlists");
+    res.render("listings/wishlists.ejs", { allListings: user.wishlists });
+};
+
+// BOOK - Create a booking
+module.exports.createBooking = async (req, res) => {
+    const Booking = require("../models/booking");
+    const Listing = require("../models/listing");
+    const { id } = req.params;
+    const { checkin, checkout } = req.body;
+
+    const listing = await Listing.findById(id);
+    if (!listing) {
+        req.flash("error", "Listing not found!");
+        return res.redirect("/listings");
+    }
+
+    const checkInDate = new Date(checkin);
+    const checkOutDate = new Date(checkout);
+
+    if (checkOutDate <= checkInDate) {
+        req.flash("error", "Checkout date must be after check-in date!");
+        return res.redirect(`/listings/${id}`);
+    }
+
+    // Check for overlapping bookings
+    const overlapping = await Booking.findOne({
+        listing: id,
+        status: { $ne: "cancelled" },
+        $or: [
+            { checkin: { $lt: checkOutDate }, checkout: { $gt: checkInDate } }
+        ]
+    });
+
+    if (overlapping) {
+        req.flash("error", "Dates are not available! Someone already booked these dates.");
+        return res.redirect(`/listings/${id}`);
+    }
+
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const totalPrice = nights * listing.price;
+
+    const booking = new Booking({
+        listing: id,
+        user: req.user._id,
+        checkin: checkInDate,
+        checkout: checkOutDate,
+        nights,
+        totalPrice
+    });
+
+    await booking.save();
+    req.flash("success", `Booking confirmed! ${nights} nights for ₹${totalPrice.toLocaleString("en-IN")}`);
+    res.redirect(`/listings/${id}`);
+};
+
+// MY BOOKINGS - Show current user's bookings
+module.exports.myBookings = async (req, res) => {
+    const Booking = require("../models/booking");
+    const bookings = await Booking.find({ user: req.user._id })
+        .populate({ path: "listing", populate: { path: "owner" } })
+        .sort({ createdAt: -1 });
+    res.render("listings/mybookings.ejs", { bookings });
+};
+
+// CANCEL BOOKING
+module.exports.cancelBooking = async (req, res) => {
+    const Booking = require("../models/booking");
+    const { bookingId } = req.params;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking || !booking.user.equals(req.user._id)) {
+        req.flash("error", "Booking not found!");
+        return res.redirect("/listings");
+    }
+
+    booking.status = "cancelled";
+    await booking.save();
+    req.flash("success", "Booking cancelled!");
+    res.redirect("/my-bookings");
 };

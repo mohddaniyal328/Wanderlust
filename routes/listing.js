@@ -20,6 +20,18 @@ const fileFilter = (req, file, cb) => {
 // 3. Initialize Multer with Cloudinary storage, file filter, and 5MB size limit
 const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
+// My Listings
+router.get("/my-listings", isLoggedIn, listingController.myListings);
+
+// Wishlists
+router.get("/wishlists", isLoggedIn, listingController.wishlists);
+router.post("/:id/wishlist", isLoggedIn, listingController.toggleWishlist);
+
+// Bookings
+router.get("/my-bookings", isLoggedIn, listingController.myBookings);
+router.post("/:id/book", isLoggedIn, listingController.createBooking);
+router.post("/bookings/:bookingId/cancel", isLoggedIn, listingController.cancelBooking);
+
 // Grouping "/" routes
 router.route("/")
     .get(listingController.index)

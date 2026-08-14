@@ -40,14 +40,19 @@
 
 ## ✨ Features
 
-- **Listings** — Browse 12+ unique properties with images, pricing, and locations
+- **Listings** — Browse 24+ unique properties with images, pricing, and locations
 - **Create & Manage** — Add your own listings with image uploads (Cloudinary)
 - **Search & Filter** — Search by title/location/country, filter by category and price range
+- **Pagination** — Server-side pagination with 6 items per page for fast loading
 - **Interactive Maps** — Leaflet.js + OpenStreetMap with geocoded locations
 - **Reviews & Ratings** — Star-based rating system with rating breakdown
+- **Wishlists** — Save your favorite listings with a heart icon
+- **Booking System** — Reserve stays with date pickers, availability checks, and price calculation
+- **My Listings** — Dashboard to manage your own property listings
+- **My Bookings** — View all your past and upcoming reservations
 - **Authentication** — Secure signup/login with Passport.js
 - **Authorization** — Only owners can edit/delete their own listings
-- **Responsive Design** — Optimized for phones (576px), tablets (768px), and desktops with 3-tier media queries
+- **Responsive Design** — Optimized for phones, tablets, and desktops with 3-tier media queries
 - **Flash Messages** — Real-time feedback for user actions
 - **Session Persistence** — MongoDB-backed sessions with secure cookies
 
@@ -84,18 +89,19 @@ WanderLust/
 ├── models/
 │   ├── listing.js           # Listing schema
 │   ├── review.js            # Review schema
-│   └── user.js              # User schema
+│   ├── booking.js           # Booking schema
+│   └── user.js              # User schema with wishlists
 ├── routes/
-│   ├── listing.js           # Listing CRUD routes
+│   ├── listing.js           # Listing CRUD + wishlist + booking routes
 │   ├── review.js            # Review routes
 │   └── user.js              # Auth routes
 ├── controllers/
-│   ├── listings.js          # Listing logic
+│   ├── listings.js          # Listing logic + pagination + wishlist + bookings
 │   ├── reviews.js           # Review logic
 │   └── users.js             # Auth logic
 ├── views/                   # EJS templates
 ├── public/                  # Static assets (CSS, JS)
-├── init/                    # Database seeders
+├── init/                    # Database seeders (24 listings, 5 users)
 ├── utils/                   # Geocoding & error handling utilities
 │   ├── geocode.js           # Nominatim geocoding with fallback
 │   ├── ExpressError.js      # Custom error class

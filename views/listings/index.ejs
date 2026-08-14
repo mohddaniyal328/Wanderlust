@@ -120,6 +120,11 @@
     </div>
 <% } %>
 
+<!-- RESULTS COUNT -->
+<% if (typeof totalItems !== 'undefined') { %>
+    <p class="text-muted mt-2" style="font-size: 0.9rem;"><%= totalItems %> listing<%= totalItems !== 1 ? 's' : '' %> found</p>
+<% } %>
+
 <!-- LISTINGS GRID -->
 <% if(allListings.length > 0) { %>
     <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
@@ -166,6 +171,39 @@
             </div>
         <% } %>
     </div>
+
+    <!-- PAGINATION -->
+    <% if (totalPages > 1) { %>
+        <nav class="d-flex justify-content-center mt-4 mb-4">
+            <ul class="pagination">
+                <% 
+                    // Build base query string preserving current filters
+                    let baseQ = [];
+                    if (typeof q !== 'undefined' && q) baseQ.push('q=' + encodeURIComponent(q));
+                    if (typeof category !== 'undefined' && category) baseQ.push('category=' + encodeURIComponent(category));
+                    if (typeof minPrice !== 'undefined' && minPrice) baseQ.push('minPrice=' + minPrice);
+                    if (typeof maxPrice !== 'undefined' && maxPrice) baseQ.push('maxPrice=' + maxPrice);
+                    const baseQueryString = baseQ.length > 0 ? '&' + baseQ.join('&') : '';
+                %>
+                <!-- Previous -->
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %><%= baseQueryString %>">&laquo;</a>
+                </li>
+
+                <!-- Page Numbers -->
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %><%= baseQueryString %>"><%= i %></a>
+                    </li>
+                <% } %>
+
+                <!-- Next -->
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %><%= baseQueryString %>">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    <% } %>
 <% } else { %>
     <!-- NO RESULTS STATE -->
     <div class="no-results">

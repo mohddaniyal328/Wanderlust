@@ -51,4 +51,52 @@
       }
     });
   }
+
+  // Booking Form - Calculate nights and total
+  const checkinInput = document.getElementById('checkin');
+  const checkoutInput = document.getElementById('checkout');
+  const bookingSummary = document.getElementById('booking-summary');
+  const nightsCount = document.getElementById('nights-count');
+  const totalPriceEl = document.getElementById('total-price');
+
+  if (checkinInput && checkoutInput && bookingSummary) {
+    // Get price per night from the page
+    const priceText = document.querySelector('.booking-price');
+    let pricePerNight = 0;
+    if (priceText) {
+      const match = priceText.textContent.replace(/,/g, '').match(/\d+/);
+      if (match) pricePerNight = parseInt(match[0]);
+    }
+
+    function updateBookingSummary() {
+      if (checkinInput.value && checkoutInput.value) {
+        const checkin = new Date(checkinInput.value);
+        const checkout = new Date(checkoutInput.value);
+        const diffTime = checkout - checkin;
+        const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (nights > 0) {
+          const total = nights * pricePerNight;
+          nightsCount.textContent = `${nights} night${nights > 1 ? 's' : ''} x ₹${pricePerNight.toLocaleString('en-IN')}`;
+          totalPriceEl.textContent = `₹${total.toLocaleString('en-IN')}`;
+          bookingSummary.style.display = 'block';
+        } else {
+          bookingSummary.style.display = 'none';
+        }
+      }
+    }
+
+    checkinInput.addEventListener('change', () => {
+      // Set min checkout to day after checkin
+      const nextDay = new Date(checkinInput.value);
+      nextDay.setDate(nextDay.getDate() + 1);
+      checkoutInput.min = nextDay.toISOString().split('T')[0];
+      if (checkoutInput.value && new Date(checkoutInput.value) <= new Date(checkinInput.value)) {
+        checkoutInput.value = nextDay.toISOString().split('T')[0];
+      }
+      updateBookingSummary();
+    });
+
+    checkoutInput.addEventListener('change', updateBookingSummary);
+  }
 })();

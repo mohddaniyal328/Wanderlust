@@ -24,15 +24,18 @@
       </form>
 
       <div class="navbar-nav ms-auto align-items-center">
-        <a class="nav-link" href="/listings/new">Add your home</a>
-        <% if(!currUser) { %>
-          <a class="nav-link" href="/signup">Signup</a>
-          <a class="nav-link" href="/login">Login</a>
-        <% } %>
         <% if(currUser) { %>
+          <a class="nav-link" href="/listings/new"><i class="fa-solid fa-plus"></i> Add</a>
+          <a class="nav-link" href="/listings/my-listings"><i class="fa-solid fa-house"></i> My Listings</a>
+          <a class="nav-link" href="/listings/wishlists"><i class="fa-solid fa-heart"></i> Wishlists</a>
+          <a class="nav-link" href="/listings/my-bookings"><i class="fa-solid fa-calendar"></i> Bookings</a>
           <form action="/logout" method="POST" class="d-inline">
             <button type="submit" class="nav-link btn btn-link">Logout</button>
           </form>
+        <% } %>
+        <% if(!currUser) { %>
+          <a class="nav-link" href="/signup">Signup</a>
+          <a class="nav-link" href="/login">Login</a>
         <% } %>
       </div>
     </div>

@@ -23,15 +23,19 @@
 
 ## 1. Project Overview
 
-**WanderLust** is a full-stack web application that allows users to list, discover, and review vacation rental properties. It replicates core Airbnb functionality including property listings with images, user authentication, a review/rating system, interactive maps, category filtering, search, and price-based filtering.
+**WanderLust** is a full-stack web application that allows users to list, discover, and review vacation rental properties. It replicates core Airbnb functionality including property listings with images, user authentication, a review/rating system, interactive maps, category filtering, search, price-based filtering, wishlists, booking system, and pagination.
 
 ### What it does
 - Users can **sign up**, **log in**, and **manage their own property listings**
 - Each listing supports **image upload** (stored on Cloudinary), **geolocation** (via OpenStreetMap Nominatim), **pricing with GST breakdown**, and **categorization**
-- Users can **search** listings by title/location/country, **filter** by category and price range
+- Users can **search** listings by title/location/country, **filter** by category and price range, with **server-side pagination** (6 items per page)
 - A full **review and rating system** (1-5 stars) with denormalized rating caches on listings
+- **Wishlist system** — save favorite listings with a heart icon, view all saved on dedicated page
+- **Booking/reservation system** — select check-in/check-out dates, availability checking, price calculation, booking management
+- **My Listings** — dashboard page showing only the current user's created listings
+- **My Bookings** — view all past and upcoming reservations with status tracking
 - **Interactive Leaflet map** on each listing showing its exact location with a custom marker
-- **Flash messages** for user feedback, **responsive design** via Bootstrap 5, and **Open Graph meta tags** for social sharing
+- **Flash messages** for user feedback, **responsive design** via Bootstrap 5 (3-tier breakpoints), and **Open Graph meta tags** for social sharing
 
 ---
 
@@ -189,6 +193,33 @@ This separation makes the codebase testable, maintainable, and scalable.
 - Error page: scaled-down title and icon on phones
 - Footer: compact layout with wrapped links on small screens
 
+### 4.9 Pagination
+- Server-side pagination with 6 items per page
+- Preserves search, category, and price filters across pages
+- Bootstrap-styled pagination controls with prev/next and page numbers
+- Shows total result count ("24 listings found")
+- Disabled states for first/last pages
+
+### 4.10 Wishlists
+- Heart icon on show page to save/unsave listings
+- Dedicated "My Wishlists" page showing all saved listings
+- Heart state persists (filled = saved, outline = not saved)
+- Requires login to use
+
+### 4.11 Booking System
+- Date picker form on show page with check-in and check-out dates
+- Dynamic price calculation (nights × price per night) in real-time
+- Availability checking — prevents overlapping bookings
+- Minimum stay: 1 night
+- Booking status tracking (confirmed/cancelled)
+- "My Bookings" page with all reservations, status badges, and cancel option
+- Owners cannot book their own listings
+
+### 4.12 User Dashboard
+- "My Listings" page shows all listings created by the current user
+- Quick edit/delete actions on each listing card
+- Empty state with prompt to create first listing
+
 ### 4.9 Social Sharing (Open Graph)
 - `boilerplate.ejs` includes OG and Twitter Card meta tags
 - Dynamic title and description per page
@@ -281,13 +312,27 @@ Three layers of authorization:
 ### Listings
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/listings` | Public | Browse all listings with search/filter |
+| GET | `/listings` | Public | Browse all listings with search/filter/pagination |
 | GET | `/listings/new` | Logged in | Render create form |
 | POST | `/listings` | Logged in | Create new listing (with image upload) |
-| GET | `/listings/:id` | Public | View listing details + reviews + map |
+| GET | `/listings/:id` | Public | View listing details + reviews + map + booking |
 | GET | `/listings/:id/edit` | Owner | Render edit form |
 | PUT | `/listings/:id` | Owner | Update listing (with optional image) |
 | DELETE | `/listings/:id` | Owner | Delete listing + cascade reviews |
+| GET | `/listings/my-listings` | Logged in | View user's own listings |
+
+### Wishlists
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/listings/:id/wishlist` | Logged in | Toggle listing in wishlist |
+| GET | `/listings/wishlists` | Logged in | View all wishlisted listings |
+
+### Bookings
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/listings/:id/book` | Logged in | Create a booking with dates |
+| GET | `/listings/my-bookings` | Logged in | View all user's bookings |
+| POST | `/listings/bookings/:bookingId/cancel` | Logged in | Cancel a booking |
 
 ### Reviews
 | Method | Path | Auth | Description |
@@ -523,7 +568,7 @@ image: {
 
 ### "Tell me about this project"
 
-> WanderLust is a full-stack vacation rental platform — essentially an Airbnb clone — built with Node.js, Express, MongoDB, and EJS. It supports full CRUD operations for property listings with cloud-based image storage on Cloudinary, interactive Leaflet maps with geocoding via OpenStreetMap, a review and rating system with denormalized caching, and advanced filtering by category, price range, and text search. The UI is fully responsive with a 3-tier breakpoint system for phones, tablets, and desktops. I deployed it on Render with MongoDB Atlas as the database.
+> WanderLust is a full-stack vacation rental platform — essentially an Airbnb clone — built with Node.js, Express, MongoDB, and EJS. It supports full CRUD operations for property listings with cloud-based image storage on Cloudinary, interactive Leaflet maps with geocoding via OpenStreetMap, a review and rating system with denormalized caching, wishlists, a booking/reservation system with date pickers and availability checking, and advanced filtering by category, price range, and text search with server-side pagination. The UI is fully responsive with a 3-tier breakpoint system for phones, tablets, and desktops. I deployed it on Render with MongoDB Atlas as the database.
 
 ### "What was the most challenging part?"
 
@@ -546,7 +591,7 @@ image: {
 > 1. **Security**: Add CSRF protection (rate limiting, security headers, mass assignment prevention already done)
 > 2. **Performance**: Add MongoDB text indexes for search instead of regex
 > 3. **Testing**: Write unit and integration tests with Jest/Supertest
-> 4. **Features**: Add pagination, wishlists, user profiles, and booking functionality
+> 4. **Features**: Add image galleries (multiple images per listing), real-time notifications, and messaging between users
 > 5. **Frontend**: Migrate to React/Next.js for a SPA experience with better UX
 > 6. **Responsive polish**: Add touch gestures for mobile map interaction, optimize filter bar for very small screens
 
@@ -559,8 +604,12 @@ image: {
 > - **Passport**: Industry-standard auth with extensive middleware ecosystem
 
 ### Key Metrics to Mention
-- **12 seed listings** across 11 categories with global locations
-- **3 demo user accounts** with role-based access
+- **24 seed listings** across 11 categories with global locations (12 Indian + 12 international)
+- **5 test user accounts** with role-based access
 - **Full CRUD** with authorization checks on every mutation
+- **Booking system** with availability checking and price calculation
+- **Wishlist system** for saving favorite listings
+- **Server-side pagination** for scalable listing browsing
+- **36+ reviews** with denormalized rating caching
 - **30+ bugs fixed** during development (crash bugs, security, logic, deployment)
 - **Zero dependencies on paid APIs** (free tier Cloudinary, OSM, Render, MongoDB Atlas)

@@ -1396,3 +1396,224 @@ body {
     font-size: 1rem;
     color: #fe424d;
 }
+
+/* ===========================
+   BOOKING SECTION
+   =========================== */
+
+.booking-section {
+    border: 1px solid #ebebeb;
+    border-radius: 16px;
+    padding: 1.5rem;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.booking-header {
+    margin-bottom: 1rem;
+}
+
+.booking-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #222;
+}
+
+.booking-price small {
+    font-weight: 400;
+    color: #717171;
+    font-size: 0.9rem;
+}
+
+.booking-form .form-control {
+    border-radius: 10px !important;
+    border: 1.5px solid #ddd;
+    padding: 0.6rem 0.8rem;
+}
+
+.booking-form .form-control:focus {
+    border-color: #fe424d !important;
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.1) !important;
+}
+
+.booking-form .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #484848;
+    margin-bottom: 0.3rem;
+}
+
+.btn-book {
+    background: linear-gradient(135deg, #fe424d, #e0303b) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.7rem !important;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(254, 66, 77, 0.35);
+    color: #fff !important;
+}
+
+.booking-summary-info {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    color: #484848;
+}
+
+/* ===========================
+   WISHLIST BUTTON
+   =========================== */
+
+.wishlist-btn {
+    padding: 0.5rem !important;
+    transition: transform 0.2s;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.15);
+}
+
+.wishlist-btn i {
+    transition: all 0.3s ease;
+}
+
+/* ===========================
+   BOOKING CARDS (My Bookings)
+   =========================== */
+
+.booking-card {
+    border: 1px solid #ebebeb !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.booking-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.booking-card .card-title {
+    font-weight: 700;
+    color: #222;
+    font-size: 1.05rem;
+}
+
+.booking-dates {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+}
+
+.booking-date-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.15rem 0;
+}
+
+.booking-date-label {
+    color: #717171;
+    font-weight: 500;
+}
+
+.booking-date-value {
+    color: #222;
+    font-weight: 600;
+}
+
+.booking-summary {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #484848;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ebebeb;
+}
+
+.booking-total {
+    font-weight: 700;
+    color: #fe424d;
+    font-size: 1rem;
+}
+
+.booking-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.booking-status.confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.booking-status.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ===========================
+   PAGINATION
+   =========================== */
+
+.pagination .page-link {
+    color: #222;
+    border: 1px solid #ebebeb;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    margin: 0 2px;
+    border-radius: 8px !important;
+    transition: all 0.2s;
+}
+
+.pagination .page-link:hover {
+    background-color: #f0f0f0;
+    border-color: #ddd;
+    color: #fe424d;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #fe424d;
+    border-color: #fe424d;
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #ccc;
+    background-color: #f8f9fa;
+    border-color: #ebebeb;
+}
+
+/* ===========================
+   RESPONSIVE - BOOKING & WISHLIST
+   =========================== */
+
+@media (max-width: 576px) {
+    .booking-section {
+        padding: 1rem;
+    }
+
+    .booking-price {
+        font-size: 1.1rem;
+    }
+
+    .wishlist-btn i {
+        font-size: 1.2rem !important;
+    }
+
+    .pagination .page-link {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}
