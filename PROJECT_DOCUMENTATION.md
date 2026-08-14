@@ -396,35 +396,23 @@ if (location) {
 }
 ```
 
-### 8.2 Denormalized Rating Cache (Incremental)
+### 8.2 Denormalized Rating Cache (Recalculation)
 ```javascript
 // controllers/reviews.js — createReview (after saving review)
-const newSum = listing.ratingSum + newReview.rating;
-const newCount = listing.reviewCount + 1;
+const populated = await Listing.findById(listing._id).populate("reviews");
+const reviews = populated.reviews;
+const count = reviews.length;
+const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+const avg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 0;
+
 await Listing.updateOne(
     { _id: listing._id },
-    {
-        $inc: { ratingSum: newReview.rating, reviewCount: 1 },
-        $set: { averageRating: parseFloat((newSum / newCount).toFixed(1)) }
-    }
-);
-
-// controllers/reviews.js — destroyReview (after deleting review)
-const newSum = Math.max(0, listing.ratingSum - rating);
-const newCount = Math.max(0, listing.reviewCount - 1);
-await Listing.updateOne(
-    { _id: id },
-    {
-        $inc: { ratingSum: -rating, reviewCount: -1 },
-        $set: { averageRating: newCount > 0 ? parseFloat((newSum / newCount).toFixed(1)) : 0 }
-    }
+    { $set: { ratingSum: sum, reviewCount: count, averageRating: avg } }
 );
 ```
-- Uses `ratingSum` (running total) + `reviewCount` as source of truth
-- `$inc` atomic operation: adds/subtracts the single review's rating
-- **Before**: Loaded ALL reviews into memory, reduced to sum, 2 DB writes per operation
-- **After**: Zero reviews loaded, 1 DB write per operation
-- `averageRating` is derived from `ratingSum / reviewCount` at write time
+- Populates all reviews and recalculates from actual data
+- Prevents drift from race conditions or failed operations
+- Single DB write per operation
 
 ### 8.3 Cascade Review Cleanup
 ```javascript
@@ -535,7 +523,7 @@ image: {
 ### Known Security Gaps (Not Yet Implemented)
 - No CSRF protection (add `csrf-sync`)
 - CSP disabled for CDN compatibility (configure whitelisted sources)
-- No XSS sanitization on user-generated content in Leaflet popups
+- No XSS sanitization on user-generated content
 
 ---
 
@@ -604,12 +592,12 @@ image: {
 > - **Passport**: Industry-standard auth with extensive middleware ecosystem
 
 ### Key Metrics to Mention
-- **24 seed listings** across 11 categories with global locations (12 Indian + 12 international)
+- **97 seed listings** across 11 categories with global locations (Indian + international)
 - **5 test user accounts** with role-based access
 - **Full CRUD** with authorization checks on every mutation
-- **Booking system** with availability checking and price calculation
+- **Booking system** with availability checking, price calculation, and self-booking prevention
 - **Wishlist system** for saving favorite listings
 - **Server-side pagination** for scalable listing browsing
-- **36+ reviews** with denormalized rating caching
-- **30+ bugs fixed** during development (crash bugs, security, logic, deployment)
+- **146+ reviews** with denormalized rating recalculation
+- **40+ bugs fixed** during development (crash bugs, security, logic, deployment)
 - **Zero dependencies on paid APIs** (free tier Cloudinary, OSM, Render, MongoDB Atlas)

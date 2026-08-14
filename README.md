@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏡 WanderLust
+# WanderLust
 
-**An Airbnb-inspired full-stack rental platform where users can discover, list, and review unique properties around the world.**
+**A full-stack vacation rental platform inspired by Airbnb — list properties, book stays, leave reviews, and explore with interactive maps.**
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Visit-brightgreen?style=for-the-badge)](https://wanderlust-2-aeji.onrender.com)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
@@ -13,52 +13,64 @@
 
 ---
 
-## 📸 Screenshots
+## Live Demo
 
-| Home Page | Listing Detail | Reviews |
-|-----------|---------------|---------|
-| ![Home](screenshots/home.png) | ![Detail](screenshots/detail.png) | ![Reviews](screenshots/reviews.png) |
-
-| Search & Filter | Map Integration | Mobile View |
-|----------------|----------------|-------------|
-| ![Search](screenshots/search.png) | ![Map](screenshots/map.png) | ![Mobile](screenshots/mobile.png) |
-
----
-
-## 🚀 Live Demo
-
-**👉 [https://wanderlust-2-aeji.onrender.com](https://wanderlust-2-aeji.onrender.com)**
+**https://wanderlust-2-aeji.onrender.com**
 
 ### Test Accounts
+
 | Username | Password |
 |----------|----------|
-| `demo` | *(provided separately)* |
-| `demo2` | *(provided separately)* |
-| `demo3` | *(provided separately)* |
+| `demo` | `741` |
+| `demo2` | `741` |
+| `demo3` | `741` |
+| `alice` | `741` |
+| `bob` | `741` |
 
 ---
 
-## ✨ Features
+## Features
 
-- **Listings** — Browse 24+ unique properties with images, pricing, and locations
-- **Create & Manage** — Add your own listings with image uploads (Cloudinary)
-- **Search & Filter** — Search by title/location/country, filter by category and price range
-- **Pagination** — Server-side pagination with 6 items per page for fast loading
-- **Interactive Maps** — Leaflet.js + OpenStreetMap with geocoded locations
-- **Reviews & Ratings** — Star-based rating system with rating breakdown
-- **Wishlists** — Save your favorite listings with a heart icon
-- **Booking System** — Reserve stays with date pickers, availability checks, and price calculation
-- **My Listings** — Dashboard to manage your own property listings
-- **My Bookings** — View all your past and upcoming reservations
-- **Authentication** — Secure signup/login with Passport.js
-- **Authorization** — Only owners can edit/delete their own listings
-- **Responsive Design** — Optimized for phones, tablets, and desktops with 3-tier media queries
-- **Flash Messages** — Real-time feedback for user actions
-- **Session Persistence** — MongoDB-backed sessions with secure cookies
+### Core
+- **97 listings** across 11 categories with images, pricing, and geocoded locations
+- **Full CRUD** — create, edit, delete listings (owner-only)
+- **Image uploads** — Cloudinary CDN with fallback to default images
+- **Interactive maps** — Leaflet.js + OpenStreetMap with custom markers
+- **Review & rating system** — 1-5 star ratings with denormalized rating cache
+
+### Search & Discovery
+- **Text search** — search by title, location, or country
+- **Category filter** — 11 categories (Trending, Rooms, Mountains, Castles, etc.)
+- **Price range filter** — min/max price with INR formatting
+- **Server-side pagination** — 6 items per page, filter-aware
+- **GST price calculator** — toggle 18% GST breakdown on cards
+
+### User Features
+- **Wishlists** — save/unsave listings with heart icon
+- **Booking system** — date pickers, availability checking, price calculation
+- **My Listings** — dashboard of your created properties
+- **My Bookings** — view all reservations with status tracking
+- **Flash messages** — real-time feedback for all actions
+
+### Security & Quality
+- **Authentication** — Passport.js with password hashing
+- **Authorization** — owner-only edit/delete, author-only review delete
+- **Rate limiting** — auth (10/15min), listings (20/15min), reviews (10/15min)
+- **Input validation** — Joi schemas for listings and reviews
+- **NoSQL injection prevention** — mongo-sanitize on all request data
+- **Regex injection prevention** — special characters escaped in search input
+- **Self-booking prevention** — owners cannot book their own listings
+- **Past date rejection** — booking dates validated server-side + client-side
+
+### Responsive Design
+- **3-tier breakpoints** — phones (≤576px), tablets (≤768px), desktops (≥992px)
+- Bootstrap 5.3.3 grid with responsive column classes across all pages
+- Collapsible navbar with full-width search on mobile
+- Listing grid: 1 col → 2 cols → 3 cols → 4 cols
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -69,106 +81,133 @@
 | **File Uploads** | Multer + Cloudinary |
 | **Maps** | Leaflet.js + OpenStreetMap + Photon Geocoding |
 | **Templating** | EJS + ejs-mate |
-| **Frontend** | Bootstrap 5, Font Awesome, Custom CSS |
+| **Frontend** | Bootstrap 5.3.3, Font Awesome 6, Custom CSS |
 | **Session Store** | connect-mongo (MongoDB-backed) |
 | **Validation** | Joi |
+| **Security** | Helmet, express-rate-limit, mongo-sanitize |
 | **Deployment** | Render |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 WanderLust/
-├── app.js                  # Express server setup
-├── package.json            # Dependencies & scripts
+├── app.js                  # Express server, middleware, DB connection
 ├── schema.js               # Joi validation schemas
-├── middleware.js            # Auth & validation middleware
+├── middleware.js            # Auth, authorization, validation middleware
 ├── config/
 │   └── cloudConfig.js      # Cloudinary + Multer config
 ├── models/
-│   ├── listing.js           # Listing schema
-│   ├── review.js            # Review schema
-│   ├── booking.js           # Booking schema
-│   └── user.js              # User schema with wishlists
-├── routes/
-│   ├── listing.js           # Listing CRUD + wishlist + booking routes
-│   ├── review.js            # Review routes
-│   └── user.js              # Auth routes
+│   ├── listing.js          # Listing schema (title, price, image, geometry, reviews[])
+│   ├── review.js           # Review schema (rating, comment, author)
+│   ├── booking.js          # Booking schema (dates, status, price)
+│   └── user.js             # User schema with wishlists array
 ├── controllers/
-│   ├── listings.js          # Listing logic + pagination + wishlist + bookings
-│   ├── reviews.js           # Review logic
-│   └── users.js             # Auth logic
-├── views/                   # EJS templates
-├── public/                  # Static assets (CSS, JS)
-├── init/                    # Database seeders (24 listings, 5 users)
-├── utils/                   # Geocoding & error handling utilities
-│   ├── geocode.js           # Nominatim geocoding with fallback
-│   ├── ExpressError.js      # Custom error class
-│   └── wrapAsync.js         # Async error wrapper
+│   ├── listings.js         # CRUD + pagination + wishlist + bookings
+│   ├── reviews.js          # Review CRUD + rating recalculation
+│   └── users.js            # Signup, login, logout
+├── routes/
+│   ├── listing.js          # Listing routes + wishlist + booking
+│   ├── review.js           # Review routes (mergeParams)
+│   └── user.js             # Auth routes
+├── views/                  # EJS templates
+├── public/                 # Static assets (CSS, JS)
+├── init/                   # Seed scripts (97 listings, 5 users, 146 reviews)
+├── utils/                  # Geocoding & error utilities
+└── uploads/                # Local upload fallback (gitignored)
 ```
 
 ---
 
-## 🏃‍♂️ Run Locally
+## API Routes
+
+### Listings
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/listings` | Public | Browse with search/filter/pagination |
+| GET | `/listings/new` | Logged in | Create form |
+| POST | `/listings` | Logged in | Create listing |
+| GET | `/listings/:id` | Public | Listing details |
+| GET | `/listings/:id/edit` | Owner | Edit form |
+| PUT | `/listings/:id` | Owner | Update listing |
+| DELETE | `/listings/:id` | Owner | Delete listing |
+| GET | `/listings/my-listings` | Logged in | User's listings |
+
+### Wishlists
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/listings/:id/wishlist` | Logged in | Toggle wishlist |
+| GET | `/listings/wishlists` | Logged in | View wishlists |
+
+### Bookings
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/listings/:id/book` | Logged in | Create booking |
+| GET | `/listings/my-bookings` | Logged in | View bookings |
+| POST | `/listings/bookings/:bookingId/cancel` | Logged in | Cancel booking |
+
+### Reviews
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/listings/:id/reviews` | Logged in | Add review |
+| DELETE | `/listings/:id/reviews/:reviewId` | Author | Delete review |
+
+### Users
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/signup` | Public | Signup form |
+| POST | `/signup` | Public | Register |
+| GET | `/login` | Public | Login form |
+| POST | `/login` | Public | Authenticate |
+| GET | `/logout` | Logged in | Destroy session |
+
+---
+
+## Run Locally
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/Wanderlust.git
+git clone https://github.com/mohddaniyal328/Wanderlust.git
 cd Wanderlust
-
-# Install dependencies
 npm install
 
-# Create .env file with your credentials
-# (see .env.example below)
+# Create .env with:
+# CLOUD_NAME, CLOUD_API_KEY, CLOUD_API_SECRET
+# SECRET, DB_URL
 
-# Seed the database
 node init/seed.js
 node init/seedReviews.js
-
-# Start the server
-npm start
-```
-
-### Environment Variables (.env)
-```
-CLOUD_NAME=your_cloudinary_cloud_name
-CLOUD_API_KEY=your_cloudinary_api_key
-CLOUD_API_SECRET=your_cloudinary_api_secret
-SECRET=your_session_secret
-DB_URL=your_mongodb_atlas_connection_string
+set PORT=3030 && node app.js
 ```
 
 ---
 
-## 📚 What I Learned
+## Key Metrics
 
-- **Full-stack development** — Built a complete MVC application from scratch
-- **RESTful API design** — Proper HTTP methods and route structure
-- **Database modeling** — Mongoose schemas with relationships (Listings → Reviews → Users)
-- **Authentication & Authorization** — Passport.js local strategy with middleware protection
-- **Cloud services** — Cloudinary for file storage, MongoDB Atlas for database
-- **Geocoding** — Integrating OpenStreetMap Nominatim API for location data
-- **Production deployment** — Environment variables, session security, reverse proxy config
-- **Error handling** — Custom error classes, async error wrapping, flash messages
+- **97 listings** across 11 categories (global locations)
+- **5 test accounts** with role-based access
+- **146 reviews** with denormalized rating cache
+- **12+ routes** with authorization middleware
+- **3-tier responsive design** (phone, tablet, desktop)
+- **Zero paid API dependencies** (free Cloudinary, OSM, Render, MongoDB Atlas)
 
 ---
 
-## 🤝 Contributing
+## What I Learned
 
-Contributions are welcome! Feel free to open an issue or submit a pull request.
-
----
-
-## 📄 License
-
-This project is open source and available under the [ISC License](LICENSE).
+- Full-stack MVC architecture with Express.js
+- MongoDB schema design with relationships and denormalized caching
+- Authentication/Authorization with Passport.js
+- Cloud file uploads with Cloudinary + Multer
+- Geocoding integration with OpenStreetMap
+- Server-side pagination and search
+- Production deployment on Render
+- Security: rate limiting, input validation, injection prevention
 
 ---
 
 <div align="center">
 
-**Built with ❤️**
+**Built with care**
 
 </div>
